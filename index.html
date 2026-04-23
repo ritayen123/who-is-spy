@@ -1012,7 +1012,7 @@ function showElimUI(idx){
   re.textContent=role==='civilian'?'平民':role==='spy'?'臥底':'白板';
   re.style.background=role==='spy'?'var(--teal)':role==='white'?'var(--pink)':'var(--green)';
   re.style.color=role==='civilian'?'#fff':'var(--black)';
-  document.getElementById('elimWord').textContent='題目：'+G.words[idx];
+  document.getElementById('elimWord').textContent='';
   document.getElementById('resultNextBtn').textContent=role==='white'?'白板猜詞':'繼續遊戲';
   vibrate(100);
 }
