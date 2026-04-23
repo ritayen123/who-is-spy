@@ -28,12 +28,13 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{font-size:16px;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans TC',sans-serif;background:#0A0A0A;color:#fff;min-height:100dvh;overflow-x:hidden;position:relative}
+body{font-family:'Noto Sans TC',sans-serif;background:#0A0A0A;color:#fff;min-height:100dvh;overflow-x:hidden;position:relative;padding-bottom:env(safe-area-inset-bottom,0)}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(170,249,82,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(170,249,82,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
 :root{--lime:#AAF952;--teal:#84D2DD;--green:#01A94D;--pink:#F1B9E1;--black:#0A0A0A;--white:#FFF;--card-bg:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.1);--font-pixel:'Press Start 2P',monospace;--font-body:'Noto Sans TC',sans-serif}
 
 /* ===== LAYOUT ===== */
-.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px 20px;position:relative;z-index:1;animation:fadeIn .4s ease}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0));position:relative;z-index:1;animation:fadeIn .4s ease}
+.screen.scrollable{justify-content:flex-start;padding-top:48px}
 .screen.active{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -43,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .section-label{font-family:var(--font-pixel);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;margin-bottom:16px}
 
 /* ===== BUTTONS ===== */
-.btn{font-family:var(--font-body);font-weight:700;font-size:16px;border:none;cursor:pointer;padding:14px 32px;border-radius:3px;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;-webkit-user-select:none;user-select:none}
+.btn{font-family:var(--font-body);font-weight:700;font-size:16px;border:none;cursor:pointer;padding:14px 32px;border-radius:3px;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .btn-primary{background:var(--lime);color:var(--black)}
 .btn-primary:hover,.btn-primary:active{transform:translateY(-3px);box-shadow:0 8px 0 rgba(170,249,82,0.3)}
 .btn-secondary{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,0.3)}
@@ -66,7 +67,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .setup-label{font-weight:700;font-size:15px}
 .setup-label small{display:block;font-weight:400;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px}
 .stepper{display:flex;align-items:center;gap:16px}
-.stepper-btn{width:36px;height:36px;border-radius:3px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.stepper-btn{width:44px;height:44px;border-radius:3px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;touch-action:manipulation}
 .stepper-btn:hover{border-color:var(--lime);color:var(--lime)}
 .stepper-btn:disabled{opacity:.2;cursor:not-allowed}
 .stepper-val{font-family:var(--font-pixel);font-size:20px;color:var(--lime);min-width:28px;text-align:center}
@@ -77,14 +78,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .word-tab.active{border-color:var(--lime);color:var(--lime);background:rgba(170,249,82,0.08)}
 .custom-inputs{display:none;flex-direction:column;gap:12px}
 .custom-inputs.show{display:flex}
-.custom-inputs input,.nickname-input{width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:rgba(255,255,255,0.05);color:#fff;font-family:var(--font-body);font-size:15px;outline:none;transition:border-color .15s}
+.custom-inputs input,.nickname-input{width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:rgba(255,255,255,0.05);color:#fff;font-family:var(--font-body);font-size:16px;outline:none;transition:border-color .15s}
 .custom-inputs input:focus,.nickname-input:focus{border-color:var(--lime)}
 .custom-inputs input::placeholder,.nickname-input::placeholder{color:rgba(255,255,255,0.25)}
 .custom-hint{font-size:11px;color:rgba(255,255,255,0.3);line-height:1.5}
 
 /* ===== FLIP CARD ===== */
 .flip-scene{perspective:800px;width:260px;height:360px;margin:24px auto}
-.flip-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.flip-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);cursor:pointer;touch-action:manipulation}
 .flip-card.flipped{transform:rotateY(180deg)}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .flip-front{background:linear-gradient(145deg,#1a1a1a,#111);border:2px solid rgba(255,255,255,0.1)}
@@ -119,7 +120,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* ===== VOTE GRID ===== */
 .vote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px;width:100%;max-width:400px;margin:16px 0 24px}
-.vote-card{aspect-ratio:1;border:2px solid rgba(255,255,255,0.12);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:var(--card-bg);gap:4px;padding:4px}
+.vote-card{aspect-ratio:1;border:2px solid rgba(255,255,255,0.12);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:var(--card-bg);gap:4px;padding:4px;touch-action:manipulation}
 .vote-card:hover:not(.disabled):not(.selected){border-color:var(--teal);transform:translateY(-3px)}
 .vote-card.selected{border-color:var(--lime);background:rgba(170,249,82,0.12);box-shadow:0 0 16px rgba(170,249,82,0.15)}
 .vote-card.disabled{opacity:.2;cursor:not-allowed}
@@ -171,7 +172,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* ===== HAND VOTE ===== */
 .hand-vote-grid{display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px;margin:16px 0 24px}
-.hand-vote-btn{padding:14px 20px;border:1px solid var(--card-border);border-radius:4px;background:var(--card-bg);color:#fff;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:12px}
+.hand-vote-btn{padding:14px 20px;border:1px solid var(--card-border);border-radius:4px;background:var(--card-bg);color:#fff;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:12px;touch-action:manipulation;min-height:48px}
 .hand-vote-btn:hover{border-color:var(--teal);transform:translateY(-2px)}
 .hand-vote-btn .hv-num{font-family:var(--font-pixel);font-size:13px;color:var(--lime);min-width:28px}
 .hand-vote-btn.hv-skip{border-color:rgba(255,255,255,0.2);justify-content:center;color:rgba(255,255,255,0.5)}
@@ -192,7 +193,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* ===== MISC ===== */
 .btn-group{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;align-items:center}
-.credit{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);z-index:1;pointer-events:none}
+.credit{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0));left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);z-index:1;pointer-events:none}
 .credit a{color:rgba(255,255,255,0.3);text-decoration:none;pointer-events:auto}
 .resume-banner{margin-top:16px;padding:12px 20px;border:1px solid rgba(132,210,221,0.3);border-radius:4px;background:rgba(132,210,221,0.06);text-align:center}
 .resume-banner p{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:8px}
@@ -203,6 +204,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .flip-scene{width:220px;height:300px}
   .vote-grid{grid-template-columns:repeat(3,1fr);gap:8px}
   .reveal-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(hover:none){
+  .btn-primary:hover{transform:none;box-shadow:none}
+  .btn-primary:active{transform:scale(0.97)}
+  .btn-dark:hover{transform:none;box-shadow:none}
+  .btn-dark:active{transform:scale(0.97)}
+  .vote-card:hover:not(.disabled):not(.selected){border-color:rgba(255,255,255,0.12);transform:none}
+  .hand-vote-btn:hover{border-color:var(--card-border);transform:none}
+  .stepper-btn:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+  .stepper-btn:active{border-color:var(--lime);color:var(--lime)}
+}
+@media(max-height:600px){
+  .flip-scene{width:200px;height:270px}
+  .screen{padding-top:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0))}
+  .handoff-icon{font-size:36px;margin-bottom:8px}
 }
 </style>
 </head>
@@ -228,7 +244,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <!-- ===== RULES ===== -->
-<div id="screen-rules" class="screen">
+<div id="screen-rules" class="screen scrollable">
   <div class="section-label">RULES</div>
   <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">遊戲規則</div>
   <div class="rules-content card">
@@ -271,7 +287,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <!-- ===== SETUP ===== -->
-<div id="screen-setup" class="screen">
+<div id="screen-setup" class="screen scrollable">
   <div class="section-label">GAME SETUP</div>
   <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">遊戲設定</div>
   <div class="card">
