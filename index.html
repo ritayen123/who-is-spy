@@ -5,729 +5,301 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>誰是臥底 | 韭點開始 fromnineon</title>
 <meta name="description" content="誰是臥底線上派對遊戲，一支手機就能玩！由韭點開始 fromnineon 製作。">
+<!-- OG -->
+<meta property="og:title" content="誰是臥底 | fromnineon 韭點開始">
+<meta property="og:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://game-smoky-eight.vercel.app">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="誰是臥底 | fromnineon 韭點開始">
+<meta name="twitter:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>">
+<!-- PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="誰是臥底">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" id="pwa-manifest">
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ===== RESET & BASE ===== */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
-body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background: #0A0A0A;
-  color: #fff;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  position: relative;
-}
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(170,249,82,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(170,249,82,0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ===== VARIABLES ===== */
-:root {
-  --lime: #AAF952;
-  --teal: #84D2DD;
-  --green: #01A94D;
-  --pink: #F1B9E1;
-  --black: #0A0A0A;
-  --white: #FFFFFF;
-  --card-bg: rgba(255,255,255,0.06);
-  --card-border: rgba(255,255,255,0.1);
-  --font-pixel: 'Press Start 2P', monospace;
-  --font-body: 'Noto Sans TC', sans-serif;
-}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:#0A0A0A;color:#fff;min-height:100dvh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(170,249,82,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(170,249,82,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+:root{--lime:#AAF952;--teal:#84D2DD;--green:#01A94D;--pink:#F1B9E1;--black:#0A0A0A;--white:#FFF;--card-bg:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.1);--font-pixel:'Press Start 2P',monospace;--font-body:'Noto Sans TC',sans-serif}
 
 /* ===== LAYOUT ===== */
-.screen {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
-  padding: 24px 20px;
-  position: relative;
-  z-index: 1;
-  animation: fadeIn 0.4s ease;
-}
-.screen.active { display: flex; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px 20px;position:relative;z-index:1;animation:fadeIn .4s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
 /* ===== TYPOGRAPHY ===== */
-.pixel { font-family: var(--font-pixel); }
-.title {
-  font-family: var(--font-pixel);
-  font-size: clamp(18px, 5vw, 32px);
-  color: var(--lime);
-  text-align: center;
-  line-height: 1.6;
-  margin-bottom: 8px;
-  text-shadow: 0 0 20px rgba(170,249,82,0.3);
-}
-.subtitle {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
-  text-align: center;
-  margin-bottom: 32px;
-}
-.section-label {
-  font-family: var(--font-pixel);
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  color: var(--teal);
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
+.pixel{font-family:var(--font-pixel)}
+.title{font-family:var(--font-pixel);font-size:clamp(18px,5vw,32px);color:var(--lime);text-align:center;line-height:1.6;margin-bottom:8px;text-shadow:0 0 20px rgba(170,249,82,0.3)}
+.section-label{font-family:var(--font-pixel);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;margin-bottom:16px}
 
 /* ===== BUTTONS ===== */
-.btn {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  padding: 14px 32px;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.btn-primary {
-  background: var(--lime);
-  color: var(--black);
-}
-.btn-primary:hover, .btn-primary:active {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(170,249,82,0.3);
-}
-.btn-secondary {
-  background: transparent;
-  color: var(--white);
-  border: 1px solid rgba(255,255,255,0.3);
-}
-.btn-secondary:hover {
-  border-color: var(--teal);
-  color: var(--teal);
-}
-.btn-danger {
-  background: #ff4757;
-  color: #fff;
-}
-.btn-dark {
-  background: var(--green);
-  color: #fff;
-}
-.btn-dark:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(1,169,77,0.3);
-}
-.btn-small {
-  font-size: 13px;
-  padding: 10px 20px;
-}
-.btn-full {
-  width: 100%;
-  max-width: 320px;
-}
-.btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
+.btn{font-family:var(--font-body);font-weight:700;font-size:16px;border:none;cursor:pointer;padding:14px 32px;border-radius:3px;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;-webkit-user-select:none;user-select:none}
+.btn-primary{background:var(--lime);color:var(--black)}
+.btn-primary:hover,.btn-primary:active{transform:translateY(-3px);box-shadow:0 8px 0 rgba(170,249,82,0.3)}
+.btn-secondary{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,0.3)}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
+.btn-dark{background:var(--green);color:#fff}
+.btn-dark:hover{transform:translateY(-3px);box-shadow:0 8px 0 rgba(1,169,77,0.3)}
+.btn-small{font-size:13px;padding:10px 20px}
+.btn-full{width:100%;max-width:320px}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-confirm-state{background:var(--teal)!important;color:var(--black)!important;animation:pulseBtn 1s ease-in-out infinite}
+@keyframes pulseBtn{0%,100%{opacity:1}50%{opacity:.7}}
 
 /* ===== CARD ===== */
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 4px;
-  padding: 24px;
-  width: 100%;
-  max-width: 400px;
-}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:4px;padding:24px;width:100%;max-width:400px}
 
-/* ===== SETUP CONTROLS ===== */
-.setup-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.setup-row:last-child { border-bottom: none; }
-.setup-label {
-  font-weight: 700;
-  font-size: 15px;
-}
-.setup-label small {
-  display: block;
-  font-weight: 400;
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 4px;
-}
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.stepper-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 3px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: transparent;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-.stepper-btn:hover { border-color: var(--lime); color: var(--lime); }
-.stepper-btn:disabled { opacity: 0.2; cursor: not-allowed; }
-.stepper-val {
-  font-family: var(--font-pixel);
-  font-size: 20px;
-  color: var(--lime);
-  min-width: 28px;
-  text-align: center;
-}
+/* ===== SETUP ===== */
+.setup-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+.setup-row:last-child{border-bottom:none}
+.setup-row.col{flex-direction:column;align-items:stretch;gap:12px}
+.setup-label{font-weight:700;font-size:15px}
+.setup-label small{display:block;font-weight:400;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px}
+.stepper{display:flex;align-items:center;gap:16px}
+.stepper-btn{width:36px;height:36px;border-radius:3px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.stepper-btn:hover{border-color:var(--lime);color:var(--lime)}
+.stepper-btn:disabled{opacity:.2;cursor:not-allowed}
+.stepper-val{font-family:var(--font-pixel);font-size:20px;color:var(--lime);min-width:28px;text-align:center}
 
-/* Toggle */
-.toggle-wrap {
-  position: relative;
-  width: 52px;
-  height: 28px;
-}
-.toggle-wrap input { display: none; }
-.toggle-track {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.1);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 22px;
-  height: 22px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.2s;
-}
-.toggle-wrap input:checked + .toggle-track {
-  background: var(--lime);
-}
-.toggle-wrap input:checked + .toggle-track::after {
-  transform: translateX(24px);
-}
-.toggle-wrap input:disabled + .toggle-track {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* Word source */
-.word-source-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.word-tab {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 3px;
-  background: transparent;
-  color: rgba(255,255,255,0.5);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.word-tab.active {
-  border-color: var(--lime);
-  color: var(--lime);
-  background: rgba(170,249,82,0.08);
-}
-.custom-inputs {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-}
-.custom-inputs.show { display: flex; }
-.custom-inputs input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 3px;
-  background: rgba(255,255,255,0.05);
-  color: #fff;
-  font-family: var(--font-body);
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.custom-inputs input:focus { border-color: var(--lime); }
-.custom-inputs input::placeholder { color: rgba(255,255,255,0.25); }
+/* word source */
+.word-source-tabs{display:flex;gap:8px;margin-bottom:16px}
+.word-tab{flex:1;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:transparent;color:rgba(255,255,255,0.5);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.word-tab.active{border-color:var(--lime);color:var(--lime);background:rgba(170,249,82,0.08)}
+.custom-inputs{display:none;flex-direction:column;gap:12px}
+.custom-inputs.show{display:flex}
+.custom-inputs input,.nickname-input{width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:rgba(255,255,255,0.05);color:#fff;font-family:var(--font-body);font-size:15px;outline:none;transition:border-color .15s}
+.custom-inputs input:focus,.nickname-input:focus{border-color:var(--lime)}
+.custom-inputs input::placeholder,.nickname-input::placeholder{color:rgba(255,255,255,0.25)}
+.custom-hint{font-size:11px;color:rgba(255,255,255,0.3);line-height:1.5}
 
 /* ===== FLIP CARD ===== */
-.flip-scene {
-  perspective: 800px;
-  width: 260px;
-  height: 380px;
-  margin: 24px auto;
-}
-.flip-card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-.flip-card.flipped { transform: rotateY(180deg); }
-.flip-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.flip-front {
-  background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
-  border: 2px solid rgba(255,255,255,0.1);
-}
-.flip-front .spy-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-  filter: grayscale(0.3);
-}
-.flip-front .tap-hint {
-  font-family: var(--font-pixel);
-  font-size: 9px;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 0.1em;
-  margin-top: 12px;
-  animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-.flip-back {
-  background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
-  border: 2px solid var(--lime);
-  transform: rotateY(180deg);
-  gap: 16px;
-}
-.flip-back .role-badge {
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  padding: 6px 16px;
-  border-radius: 3px;
-  letter-spacing: 0.1em;
-}
-.role-civilian .role-badge { background: var(--green); color: #fff; }
-.role-spy .role-badge { background: var(--teal); color: var(--black); }
-.role-white .role-badge { background: var(--pink); color: var(--black); }
-.flip-back .word-display {
-  font-size: 32px;
-  font-weight: 900;
-  text-align: center;
-  line-height: 1.4;
-}
-.role-civilian .word-display { color: var(--lime); }
-.role-spy .word-display { color: var(--teal); }
-.role-white .word-display { color: var(--pink); }
+.flip-scene{perspective:800px;width:260px;height:360px;margin:24px auto}
+.flip-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.flip-front{background:linear-gradient(145deg,#1a1a1a,#111);border:2px solid rgba(255,255,255,0.1)}
+.flip-front .spy-icon{font-size:64px;margin-bottom:16px}
+.flip-front .tap-hint{font-family:var(--font-pixel);font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.1em;margin-top:12px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.flip-back{background:linear-gradient(145deg,#1a1a1a,#111);transform:rotateY(180deg);gap:16px;border:2px solid var(--lime)}
+.flip-back.is-white{border-color:var(--pink)}
+.flip-back .role-hint{font-family:var(--font-pixel);font-size:10px;padding:5px 14px;border-radius:3px;letter-spacing:.1em;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5)}
+.flip-back.is-white .role-hint{background:rgba(241,185,225,0.15);color:var(--pink)}
+.flip-back .word-display{font-size:36px;font-weight:900;text-align:center;line-height:1.4;color:var(--lime)}
+.flip-back.is-white .word-display{color:var(--pink)}
 
-/* ===== PLAYER PASS SCREEN ===== */
-.pass-msg {
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 8px;
-}
-.pass-player {
-  font-family: var(--font-pixel);
-  font-size: clamp(24px, 6vw, 36px);
-  color: var(--lime);
-  text-align: center;
-  margin-bottom: 24px;
-}
+/* ===== HANDOFF ===== */
+.handoff-icon{font-size:48px;margin-bottom:16px}
+.handoff-msg{font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;line-height:1.6}
+.handoff-sub{font-size:13px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:32px}
+.handoff-name{font-family:var(--font-pixel);font-size:clamp(20px,5vw,28px);color:var(--lime);text-align:center;margin-bottom:24px}
 
-/* ===== ROUND INFO ===== */
-.round-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 400px;
-  padding: 12px 16px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 3px;
-  margin-bottom: 24px;
-}
-.round-bar .round-num {
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  color: var(--lime);
-}
-.round-bar .alive-count {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-}
+/* ===== ROUND BAR ===== */
+.round-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:400px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;margin-bottom:24px}
+.round-bar .round-num{font-family:var(--font-pixel);font-size:11px;color:var(--lime)}
+.round-bar .alive-count{font-size:13px;color:rgba(255,255,255,0.5)}
 
 /* ===== TIMER ===== */
-.timer {
-  font-family: var(--font-pixel);
-  font-size: 28px;
-  color: var(--lime);
-  margin: 16px 0;
-}
-.timer.warning { color: #ff4757; animation: pulse 0.5s ease-in-out infinite; }
+.timer{font-family:var(--font-pixel);font-size:28px;color:var(--lime);margin:16px 0}
+.timer.warning{color:#ff4757;animation:pulse .5s ease-in-out infinite}
 
-/* ===== DESCRIBE SCREEN ===== */
-.current-speaker {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 8px;
-}
-.speaker-name {
-  font-family: var(--font-pixel);
-  font-size: clamp(20px, 5vw, 28px);
-  color: var(--lime);
-  text-align: center;
-  margin-bottom: 24px;
-}
+/* ===== DESCRIBE ===== */
+.current-speaker{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:8px}
+.speaker-name{font-family:var(--font-pixel);font-size:clamp(16px,4.5vw,24px);color:var(--lime);text-align:center;margin-bottom:24px;word-break:break-all}
 
 /* ===== VOTE GRID ===== */
-.vote-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-  margin: 16px 0 24px;
-}
-.vote-card {
-  aspect-ratio: 1;
-  border: 2px solid rgba(255,255,255,0.12);
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  background: var(--card-bg);
-  gap: 6px;
-}
-.vote-card:hover:not(.disabled):not(.selected) {
-  border-color: var(--teal);
-  transform: translateY(-3px);
-}
-.vote-card.selected {
-  border-color: var(--lime);
-  background: rgba(170,249,82,0.12);
-  box-shadow: 0 0 16px rgba(170,249,82,0.15);
-}
-.vote-card.disabled {
-  opacity: 0.2;
-  cursor: not-allowed;
-}
-.vote-card .player-num {
-  font-family: var(--font-pixel);
-  font-size: 18px;
-  color: var(--lime);
-}
-.vote-card .player-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-}
-.vote-card.eliminated {
-  opacity: 0.15;
-  pointer-events: none;
-  text-decoration: line-through;
-}
+.vote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px;width:100%;max-width:400px;margin:16px 0 24px}
+.vote-card{aspect-ratio:1;border:2px solid rgba(255,255,255,0.12);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:var(--card-bg);gap:4px;padding:4px}
+.vote-card:hover:not(.disabled):not(.selected){border-color:var(--teal);transform:translateY(-3px)}
+.vote-card.selected{border-color:var(--lime);background:rgba(170,249,82,0.12);box-shadow:0 0 16px rgba(170,249,82,0.15)}
+.vote-card.disabled{opacity:.2;cursor:not-allowed}
+.vote-card .player-num{font-family:var(--font-pixel);font-size:16px;color:var(--lime)}
+.vote-card .player-label{font-size:10px;color:rgba(255,255,255,0.4);text-align:center;word-break:break-all;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.vote-card.eliminated{opacity:.15;pointer-events:none}
 
 /* ===== VOTE RESULT ===== */
-.result-list {
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 16px 0 24px;
-}
-.result-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 3px;
-}
-.result-row.top-vote {
-  border-color: #ff4757;
-  background: rgba(255,71,87,0.1);
-}
-.result-row .r-name {
-  font-weight: 700;
-  flex: 1;
-}
-.result-bar-wrap {
-  flex: 2;
-  height: 8px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.result-bar {
-  height: 100%;
-  background: var(--lime);
-  border-radius: 4px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.result-row.top-vote .result-bar { background: #ff4757; }
-.result-row .r-votes {
-  font-family: var(--font-pixel);
-  font-size: 13px;
-  color: var(--lime);
-  min-width: 24px;
-  text-align: right;
-}
-.result-row.top-vote .r-votes { color: #ff4757; }
+.result-list{width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;margin:16px 0 24px}
+.result-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px}
+.result-row.top-vote{border-color:#ff4757;background:rgba(255,71,87,0.1)}
+.result-row .r-name{font-weight:700;flex:1;font-size:14px}
+.result-bar-wrap{flex:2;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.result-bar{height:100%;background:var(--lime);border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.result-row.top-vote .result-bar{background:#ff4757}
+.result-row .r-votes{font-family:var(--font-pixel);font-size:13px;color:var(--lime);min-width:24px;text-align:right}
+.result-row.top-vote .r-votes{color:#ff4757}
 
 /* ===== ELIMINATION ===== */
-.eliminated-reveal {
-  text-align: center;
-  margin: 16px 0;
-}
-.eliminated-player {
-  font-family: var(--font-pixel);
-  font-size: 24px;
-  margin-bottom: 12px;
-}
-.eliminated-role {
-  font-size: 18px;
-  font-weight: 700;
-  padding: 8px 24px;
-  border-radius: 3px;
-  display: inline-block;
-  margin-bottom: 8px;
-}
-.eliminated-word {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
-}
+.eliminated-reveal{text-align:center;margin:16px 0}
+.eliminated-player{font-family:var(--font-pixel);font-size:20px;margin-bottom:12px}
+.eliminated-role{font-size:18px;font-weight:700;padding:8px 24px;border-radius:3px;display:inline-block;margin-bottom:8px}
+.eliminated-word{font-size:14px;color:rgba(255,255,255,0.5)}
 
 /* ===== MR WHITE GUESS ===== */
-.guess-input {
-  width: 100%;
-  max-width: 320px;
-  padding: 14px 18px;
-  border: 2px solid var(--pink);
-  border-radius: 3px;
-  background: rgba(241,185,225,0.08);
-  color: #fff;
-  font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  outline: none;
-  margin: 16px 0;
-}
-.guess-input:focus { box-shadow: 0 0 16px rgba(241,185,225,0.2); }
+.guess-input{width:100%;max-width:320px;padding:14px 18px;border:2px solid var(--pink);border-radius:3px;background:rgba(241,185,225,0.08);color:#fff;font-family:var(--font-body);font-size:18px;font-weight:700;text-align:center;outline:none;margin:16px 0}
+.guess-input:focus{box-shadow:0 0 16px rgba(241,185,225,0.2)}
 
 /* ===== GAME OVER ===== */
-.winner-text {
-  font-family: var(--font-pixel);
-  font-size: clamp(16px, 4vw, 24px);
-  text-align: center;
-  margin-bottom: 24px;
-  line-height: 1.8;
-}
-.winner-civilian { color: var(--lime); }
-.winner-spy { color: var(--teal); }
-.winner-white { color: var(--pink); }
+.winner-text{font-family:var(--font-pixel);font-size:clamp(14px,3.5vw,22px);text-align:center;margin-bottom:24px;line-height:1.8}
+.winner-civilian{color:var(--lime)}
+.winner-spy{color:var(--teal)}
+.winner-white{color:var(--pink)}
+.reveal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;width:100%;max-width:400px;margin-bottom:32px}
+.reveal-card{padding:14px 8px;border-radius:4px;text-align:center;border:1px solid var(--card-border);background:var(--card-bg)}
+.reveal-card .rv-num{font-family:var(--font-pixel);font-size:10px;margin-bottom:4px;color:rgba(255,255,255,0.5)}
+.reveal-card .rv-name{font-size:13px;font-weight:700;margin-bottom:6px}
+.reveal-card .rv-role{font-size:10px;font-weight:700;margin-bottom:4px;padding:2px 8px;border-radius:2px;display:inline-block}
+.reveal-card .rv-word{font-size:14px;font-weight:900}
+.reveal-card.rc-civilian{border-color:rgba(1,169,77,0.4)}
+.reveal-card.rc-civilian .rv-role{background:var(--green)}
+.reveal-card.rc-civilian .rv-word{color:var(--lime)}
+.reveal-card.rc-spy{border-color:rgba(132,210,221,0.4)}
+.reveal-card.rc-spy .rv-role{background:var(--teal);color:var(--black)}
+.reveal-card.rc-spy .rv-word{color:var(--teal)}
+.reveal-card.rc-white{border-color:rgba(241,185,225,0.4)}
+.reveal-card.rc-white .rv-role{background:var(--pink);color:var(--black)}
+.reveal-card.rc-white .rv-word{color:var(--pink)}
 
-.reveal-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 32px;
-}
-.reveal-card {
-  padding: 14px 8px;
-  border-radius: 4px;
-  text-align: center;
-  border: 1px solid var(--card-border);
-  background: var(--card-bg);
-}
-.reveal-card .rv-num {
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  margin-bottom: 6px;
-}
-.reveal-card .rv-role {
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  padding: 2px 8px;
-  border-radius: 2px;
-  display: inline-block;
-}
-.reveal-card .rv-word {
-  font-size: 14px;
-  font-weight: 900;
-}
-.reveal-card.rc-civilian { border-color: rgba(1,169,77,0.4); }
-.reveal-card.rc-civilian .rv-role { background: var(--green); }
-.reveal-card.rc-civilian .rv-word { color: var(--lime); }
-.reveal-card.rc-spy { border-color: rgba(132,210,221,0.4); }
-.reveal-card.rc-spy .rv-role { background: var(--teal); color: var(--black); }
-.reveal-card.rc-spy .rv-word { color: var(--teal); }
-.reveal-card.rc-white { border-color: rgba(241,185,225,0.4); }
-.reveal-card.rc-white .rv-role { background: var(--pink); color: var(--black); }
-.reveal-card.rc-white .rv-word { color: var(--pink); }
+/* ===== HAND VOTE ===== */
+.hand-vote-grid{display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px;margin:16px 0 24px}
+.hand-vote-btn{padding:14px 20px;border:1px solid var(--card-border);border-radius:4px;background:var(--card-bg);color:#fff;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:12px}
+.hand-vote-btn:hover{border-color:var(--teal);transform:translateY(-2px)}
+.hand-vote-btn .hv-num{font-family:var(--font-pixel);font-size:13px;color:var(--lime);min-width:28px}
+.hand-vote-btn.hv-skip{border-color:rgba(255,255,255,0.2);justify-content:center;color:rgba(255,255,255,0.5)}
+.hand-vote-btn.hv-skip:hover{color:var(--teal)}
 
-/* ===== FOOTER ===== */
-.credit {
-  position: fixed;
-  bottom: 12px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 11px;
-  color: rgba(255,255,255,0.2);
-  z-index: 1;
-  pointer-events: none;
-}
-.credit a {
-  color: rgba(255,255,255,0.3);
-  text-decoration: none;
-  pointer-events: auto;
-}
+/* ===== RULES ===== */
+.rules-content{width:100%;max-width:420px;line-height:1.8;font-size:14px;color:rgba(255,255,255,0.7)}
+.rules-content h3{color:var(--lime);font-size:15px;margin:20px 0 8px;font-weight:900}
+.rules-content h3:first-child{margin-top:0}
+.rules-content ul{padding-left:20px;margin-bottom:8px}
+.rules-content li{margin-bottom:4px}
+.rules-content .rule-highlight{color:var(--teal);font-weight:700}
 
-/* ===== BUTTON GROUP ===== */
-.btn-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 320px;
-  align-items: center;
-}
+/* ===== TIE ===== */
+.tie-msg{text-align:center;padding:16px 24px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;background:rgba(255,255,255,0.05);margin:16px 0 24px;max-width:400px}
+.tie-msg .tie-icon{font-size:32px;margin-bottom:8px}
+.tie-msg p{color:rgba(255,255,255,0.6);font-size:14px}
 
-/* ===== TOAST / TIE MSG ===== */
-.tie-msg {
-  text-align: center;
-  padding: 16px 24px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 4px;
-  background: rgba(255,255,255,0.05);
-  margin: 16px 0 24px;
-  max-width: 400px;
-}
-.tie-msg .tie-icon { font-size: 32px; margin-bottom: 8px; }
-.tie-msg p { color: rgba(255,255,255,0.6); font-size: 14px; }
+/* ===== MISC ===== */
+.btn-group{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;align-items:center}
+.credit{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);z-index:1;pointer-events:none}
+.credit a{color:rgba(255,255,255,0.3);text-decoration:none;pointer-events:auto}
+.resume-banner{margin-top:16px;padding:12px 20px;border:1px solid rgba(132,210,221,0.3);border-radius:4px;background:rgba(132,210,221,0.06);text-align:center}
+.resume-banner p{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:8px}
+.nickname-wrap{width:100%;max-width:260px;margin-top:16px}
+.nickname-wrap label{font-size:12px;color:rgba(255,255,255,0.4);display:block;margin-bottom:6px}
 
-/* ===== MEDIA ===== */
-@media (max-width: 380px) {
-  .flip-scene { width: 220px; height: 320px; }
-  .vote-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .reveal-grid { grid-template-columns: repeat(2, 1fr); }
+@media(max-width:380px){
+  .flip-scene{width:220px;height:300px}
+  .vote-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .reveal-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
 <body>
 
-<!-- ==================== SCREEN 1: START ==================== -->
+<!-- ===== START ===== -->
 <div id="screen-start" class="screen active">
-  <div style="margin-bottom: 48px; text-align: center;">
-    <div class="title" style="margin-bottom: 16px; line-height: 2;">誰是臥底</div>
-    <div style="font-family: var(--font-pixel); font-size: 9px; color: var(--teal); letter-spacing: 0.15em; margin-bottom: 24px;">WHO IS THE SPY</div>
-    <div style="font-size: 48px; margin-bottom: 24px;">🕵️</div>
-    <p style="color: rgba(255,255,255,0.4); font-size: 14px; max-width: 280px; margin: 0 auto; line-height: 1.8;">
-      一支手機，輪流傳閱<br>找出混在人群中的臥底！
-    </p>
+  <div style="margin-bottom:48px;text-align:center">
+    <div class="title" style="margin-bottom:16px;line-height:2">誰是臥底</div>
+    <div style="font-family:var(--font-pixel);font-size:9px;color:var(--teal);letter-spacing:.15em;margin-bottom:24px">WHO IS THE SPY</div>
+    <div style="font-size:48px;margin-bottom:24px">🕵️</div>
+    <p style="color:rgba(255,255,255,0.4);font-size:14px;max-width:280px;margin:0 auto;line-height:1.8">一支手機，輪流傳閱<br>找出混在人群中的臥底！</p>
   </div>
-  <button class="btn btn-primary btn-full" onclick="showScreen('setup')">開始遊戲</button>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" onclick="showScreen('setup')">開始遊戲</button>
+    <button class="btn btn-secondary btn-small" onclick="showScreen('rules')">遊戲規則</button>
+    <div id="resumeBanner" class="resume-banner" style="display:none">
+      <p>偵測到上次未完成的遊戲</p>
+      <button class="btn btn-dark btn-small" onclick="resumeGame()">繼續遊戲</button>
+      <button class="btn btn-secondary btn-small" style="margin-left:8px" onclick="clearSave()">捨棄</button>
+    </div>
+  </div>
 </div>
 
-<!-- ==================== SCREEN 2: SETUP ==================== -->
+<!-- ===== RULES ===== -->
+<div id="screen-rules" class="screen">
+  <div class="section-label">RULES</div>
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">遊戲規則</div>
+  <div class="rules-content card">
+    <h3>角色分配</h3>
+    <ul>
+      <li><span class="rule-highlight">平民</span>：拿到相同的詞（多數派）</li>
+      <li><span class="rule-highlight">臥底</span>：拿到相似但不同的詞（少數派）</li>
+      <li><span class="rule-highlight">白板</span>：沒有詞，靠聽別人描述瞎掰</li>
+    </ul>
+    <h3>重點：你不知道自己是誰！</h3>
+    <ul>
+      <li>每個人只會看到自己的詞</li>
+      <li>你不知道自己是平民還是臥底</li>
+      <li>要從別人的描述中推理判斷</li>
+    </ul>
+    <h3>遊戲流程</h3>
+    <ul>
+      <li>輪流用<span class="rule-highlight">一句話</span>描述自己的詞</li>
+      <li>不可以直接說出詞彙本身</li>
+      <li>描述完畢後投票選出嫌疑人</li>
+      <li>得票最高者淘汰並揭露身份</li>
+      <li>平票則不淘汰，進入下一輪</li>
+    </ul>
+    <h3>勝利條件</h3>
+    <ul>
+      <li>平民勝：淘汰所有臥底與白板</li>
+      <li>臥底勝：存活到最後（剩 3 人以下）</li>
+      <li>白板被淘汰時可猜平民的詞，猜對翻盤！</li>
+    </ul>
+    <h3>描述技巧</h3>
+    <ul>
+      <li>太明顯 → 臥底抄你的答案</li>
+      <li>太模糊 → 同伴聽不懂投你票</li>
+      <li>拿捏分寸是致勝關鍵！</li>
+    </ul>
+  </div>
+  <div class="btn-group" style="margin-top:24px">
+    <button class="btn btn-secondary btn-small" onclick="showScreen('start')">返回</button>
+  </div>
+</div>
+
+<!-- ===== SETUP ===== -->
 <div id="screen-setup" class="screen">
   <div class="section-label">GAME SETUP</div>
-  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); margin-bottom: 24px;">遊戲設定</div>
-
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">遊戲設定</div>
   <div class="card">
-    <!-- Player count -->
     <div class="setup-row">
       <div class="setup-label">玩家人數</div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adjustPlayers(-1)">−</button>
-        <span id="playerCount" class="stepper-val">6</span>
-        <button class="stepper-btn" onclick="adjustPlayers(1)">+</button>
+        <button class="stepper-btn" onclick="adj('players',-1)">−</button>
+        <span id="valPlayers" class="stepper-val">6</span>
+        <button class="stepper-btn" onclick="adj('players',1)">+</button>
       </div>
     </div>
-
-    <!-- Spy count -->
     <div class="setup-row">
-      <div class="setup-label">
-        臥底人數
-        <small id="spySuggestion">建議：2 人</small>
-      </div>
+      <div class="setup-label">臥底人數<small id="spyHint">建議：2 人</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adjustSpies(-1)">−</button>
-        <span id="spyCount" class="stepper-val">2</span>
-        <button class="stepper-btn" onclick="adjustSpies(1)">+</button>
+        <button class="stepper-btn" onclick="adj('spies',-1)">−</button>
+        <span id="valSpies" class="stepper-val">2</span>
+        <button class="stepper-btn" onclick="adj('spies',1)">+</button>
       </div>
     </div>
-
-    <!-- Mr. White toggle -->
     <div class="setup-row">
-      <div class="setup-label">
-        白板
-        <small id="whiteHint">沒有題目，靠瞎掰</small>
-      </div>
-      <div class="toggle-wrap">
-        <input type="checkbox" id="whiteToggle" onchange="updateWhiteToggle()">
-        <label class="toggle-track" for="whiteToggle"></label>
+      <div class="setup-label">白板人數<small id="whiteHint">沒有題目，靠瞎掰</small></div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adj('whites',-1)">−</button>
+        <span id="valWhites" class="stepper-val">0</span>
+        <button class="stepper-btn" onclick="adj('whites',1)">+</button>
       </div>
     </div>
-
-    <!-- Word source -->
-    <div class="setup-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+    <div class="setup-row col">
       <div class="setup-label">題目來源</div>
       <div class="word-source-tabs">
         <button class="word-tab active" data-src="random" onclick="setWordSource('random')">隨機題庫</button>
@@ -736,729 +308,794 @@ body::before {
       <div id="customInputs" class="custom-inputs">
         <input type="text" id="customCivilian" placeholder="平民的詞（如：水餃）">
         <input type="text" id="customSpy" placeholder="臥底的詞（如：鍋貼）">
+        <div class="custom-hint">建議由不參加遊戲的人輸入題目，避免出題者知道答案</div>
       </div>
     </div>
   </div>
-
-  <div class="btn-group" style="margin-top: 24px;">
+  <div class="btn-group" style="margin-top:24px">
     <button class="btn btn-primary btn-full" onclick="startGame()">確認開始</button>
     <button class="btn btn-secondary btn-small" onclick="showScreen('start')">返回</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 3: PASS PHONE ==================== -->
-<div id="screen-pass" class="screen">
-  <div class="section-label">PASS THE PHONE</div>
-  <div class="pass-msg">請將手機交給</div>
-  <div id="passPlayer" class="pass-player">玩家 1</div>
+<!-- ===== HANDOFF (generic pass-the-phone screen) ===== -->
+<div id="screen-handoff" class="screen">
+  <div id="handoffIcon" class="handoff-icon">📱</div>
+  <div id="handoffMsg" class="handoff-msg">請將手機交給</div>
+  <div id="handoffName" class="handoff-name">玩家 1</div>
+  <div id="handoffSub" class="handoff-sub"></div>
+  <button class="btn btn-primary btn-full" id="handoffBtn" onclick="onHandoff()">準備好了</button>
+</div>
 
-  <div class="flip-scene" id="flipScene">
-    <div class="flip-card" id="flipCard" onclick="flipCardToggle()">
+<!-- ===== REVEAL (card flip + nickname) ===== -->
+<div id="screen-reveal" class="screen">
+  <div class="section-label">YOUR WORD</div>
+  <div class="flip-scene">
+    <div class="flip-card" id="flipCard" onclick="flipToggle()">
       <div class="flip-face flip-front">
         <div class="spy-icon">🕵️</div>
-        <div class="tap-hint">CLICK TO REVEAL</div>
+        <div class="tap-hint">點擊翻牌</div>
       </div>
       <div class="flip-face flip-back" id="flipBack">
-        <span class="role-badge" id="roleBadge">平民</span>
+        <span class="role-hint" id="roleHint">你的題目</span>
         <span class="word-display" id="wordDisplay">水餃</span>
       </div>
     </div>
   </div>
-
-  <div id="passActions" class="btn-group" style="display: none;">
-    <button class="btn btn-primary btn-full" onclick="confirmSeen()">我記住了</button>
+  <div id="revealActions" style="display:none;width:100%;max-width:320px">
+    <div class="nickname-wrap">
+      <label>輸入暱稱（選填）</label>
+      <input type="text" class="nickname-input" id="nicknameInput" placeholder="例：小明" maxlength="8">
+    </div>
+    <div class="btn-group" style="margin-top:16px">
+      <button class="btn btn-primary btn-full" onclick="confirmSeen()">我記住了</button>
+      <div style="font-size:11px;color:rgba(255,255,255,0.25);text-align:center">點擊卡片可蓋回隱藏</div>
+    </div>
   </div>
 </div>
 
-<!-- ==================== SCREEN 4: DESCRIBE ==================== -->
+<!-- ===== DESCRIBE ===== -->
 <div id="screen-describe" class="screen">
   <div class="round-bar">
     <span class="round-num" id="roundNum">ROUND 1</span>
     <span class="alive-count" id="aliveCount">存活：6 人</span>
   </div>
-
   <div class="current-speaker">輪到描述</div>
   <div id="speakerName" class="speaker-name">玩家 1</div>
-
   <div class="timer" id="timer">60</div>
-
   <div class="btn-group">
-    <button class="btn btn-primary btn-full" onclick="nextSpeaker()">描述完畢</button>
+    <button class="btn btn-primary btn-full" id="describeDoneBtn" onclick="onDescribeDone()">描述完畢</button>
     <button class="btn btn-secondary btn-small" onclick="peekWord()">忘記題目</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 3B: PEEK WORD (reuse pass screen logic) ==================== -->
+<!-- ===== PEEK ===== -->
 <div id="screen-peek" class="screen">
-  <div class="section-label">PEEK WORD</div>
-  <div class="pass-msg">確認是本人嗎？</div>
-  <div id="peekPlayer" class="pass-player">玩家 1</div>
-
+  <div class="section-label">PEEK</div>
+  <div class="handoff-msg">確認是本人嗎？</div>
+  <div id="peekPlayer" class="handoff-name">玩家 1</div>
   <div class="flip-scene">
-    <div class="flip-card" id="peekFlipCard" onclick="peekFlipToggle()">
+    <div class="flip-card" id="peekFlip" onclick="peekFlipToggle()">
       <div class="flip-face flip-front">
         <div class="spy-icon">🔍</div>
-        <div class="tap-hint">CLICK TO PEEK</div>
+        <div class="tap-hint">點擊偷看</div>
       </div>
-      <div class="flip-face flip-back" id="peekFlipBack">
-        <span class="role-badge" id="peekRoleBadge">平民</span>
-        <span class="word-display" id="peekWordDisplay">水餃</span>
+      <div class="flip-face flip-back" id="peekBack">
+        <span class="role-hint" id="peekHint">你的題目</span>
+        <span class="word-display" id="peekWord">水餃</span>
       </div>
     </div>
   </div>
-
-  <div id="peekActions" class="btn-group" style="display: none;">
+  <div id="peekActions" class="btn-group" style="display:none">
     <button class="btn btn-primary btn-full" onclick="closePeek()">看完了</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 5: VOTE ==================== -->
-<div id="screen-vote" class="screen">
+<!-- ===== VOTE METHOD ===== -->
+<div id="screen-vote-method" class="screen">
   <div class="round-bar">
-    <span class="round-num" id="voteRoundNum">ROUND 1</span>
-    <span class="alive-count" id="voteAliveCount">存活：6 人</span>
+    <span class="round-num" id="vmRound">ROUND 1</span>
+    <span class="alive-count" id="vmAlive">存活：6 人</span>
   </div>
-
   <div class="section-label">VOTE</div>
-  <div id="voterPrompt" class="pass-msg" style="margin-bottom: 4px;">玩家 1 請投票</div>
-  <div style="font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 16px;">選出你認為的臥底</div>
-
-  <div id="voteGrid" class="vote-grid"></div>
-
+  <div class="handoff-msg" style="margin-bottom:8px">選擇投票方式</div>
+  <div class="handoff-sub" style="margin-bottom:32px">描述結束，開始投票！</div>
   <div class="btn-group">
-    <button class="btn btn-primary btn-full" id="confirmVoteBtn" onclick="confirmVote()" disabled>確認投票</button>
-    <div style="font-size: 12px; color: rgba(255,255,255,0.25); text-align: center;">投完請將手機交給下一位</div>
+    <button class="btn btn-primary btn-full" onclick="startDigitalVote()">手機逐人投票</button>
+    <button class="btn btn-dark btn-full" onclick="startHandVote()">舉手表決</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 6: VOTE RESULT ==================== -->
+<!-- ===== DIGITAL VOTE ===== -->
+<div id="screen-vote" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="voteRound">ROUND 1</span>
+    <span class="alive-count" id="voteAlive">存活：6 人</span>
+  </div>
+  <div class="section-label">VOTE</div>
+  <div id="voterPrompt" class="handoff-msg" style="margin-bottom:4px">玩家 1 請投票</div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">選出你認為的臥底</div>
+  <div id="voteGrid" class="vote-grid"></div>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" id="confirmVoteBtn" onclick="confirmVote()" disabled>確認投票</button>
+  </div>
+</div>
+
+<!-- ===== HAND VOTE ===== -->
+<div id="screen-hand-vote" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="hvRound">ROUND 1</span>
+    <span class="alive-count" id="hvAlive">存活：6 人</span>
+  </div>
+  <div class="section-label">HAND VOTE</div>
+  <div class="handoff-msg" style="margin-bottom:8px">舉手表決結果</div>
+  <div class="handoff-sub" style="margin-bottom:16px">點兩下確認淘汰對象</div>
+  <div id="handVoteGrid" class="hand-vote-grid"></div>
+</div>
+
+<!-- ===== RESULT ===== -->
 <div id="screen-result" class="screen">
   <div class="section-label">RESULT</div>
-  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); margin-bottom: 16px;">投票結果</div>
-
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:16px">投票結果</div>
   <div id="resultList" class="result-list"></div>
-
-  <!-- tie -->
-  <div id="tieMessage" class="tie-msg" style="display: none;">
+  <div id="tieMessage" class="tie-msg" style="display:none">
     <div class="tie-icon">⚖️</div>
     <p>平票！本輪無人淘汰</p>
   </div>
-
-  <!-- elimination reveal -->
-  <div id="eliminationReveal" class="eliminated-reveal" style="display: none;">
+  <div id="eliminationReveal" class="eliminated-reveal" style="display:none">
     <div id="elimPlayer" class="eliminated-player"></div>
     <div id="elimRole" class="eliminated-role"></div>
     <div id="elimWord" class="eliminated-word"></div>
   </div>
-
-  <div class="btn-group" style="margin-top: 8px;">
-    <button class="btn btn-primary btn-full" id="resultNextBtn" onclick="afterVoteResult()">繼續遊戲</button>
+  <div class="btn-group" style="margin-top:8px">
+    <button class="btn btn-primary btn-full" id="resultNextBtn" onclick="afterResult()">繼續遊戲</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 6.5: MR WHITE GUESS ==================== -->
+<!-- ===== WHITE GUESS ===== -->
 <div id="screen-white-guess" class="screen">
-  <div class="section-label" style="color: var(--pink);">MR. WHITE</div>
-  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); color: var(--pink); margin-bottom: 8px;">白板被抓到了！</div>
-  <p style="color: rgba(255,255,255,0.5); font-size: 14px; text-align: center; margin-bottom: 24px; line-height: 1.8; max-width: 300px;">
-    最後一次機會——<br>猜出平民的詞就能翻盤！
-  </p>
-
+  <div class="section-label" style="color:var(--pink)">MR. WHITE</div>
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);color:var(--pink);margin-bottom:8px">白板被抓到了！</div>
+  <p style="color:rgba(255,255,255,0.5);font-size:14px;text-align:center;margin-bottom:24px;line-height:1.8;max-width:300px">最後一次機會——<br>猜出平民的詞就能翻盤！</p>
   <input type="text" class="guess-input" id="whiteGuessInput" placeholder="輸入你的猜測">
-
-  <div class="btn-group" style="margin-top: 8px;">
-    <button class="btn btn-primary btn-full" style="background: var(--pink); color: var(--black);" onclick="submitWhiteGuess()">確認猜測</button>
+  <div class="btn-group" style="margin-top:8px">
+    <button class="btn btn-primary btn-full" style="background:var(--pink);color:var(--black)" onclick="submitWhiteGuess()">確認猜測</button>
   </div>
 </div>
 
-<!-- ==================== SCREEN 7: GAME OVER ==================== -->
+<!-- ===== GAME OVER ===== -->
 <div id="screen-gameover" class="screen">
   <div class="section-label">GAME OVER</div>
-  <div style="font-size: 48px; margin-bottom: 16px;" id="winnerEmoji">🎉</div>
+  <div style="font-size:48px;margin-bottom:16px" id="winnerEmoji">🎉</div>
   <div id="winnerText" class="winner-text"></div>
-
-  <div id="revealGrid" class="reveal-grid"></div>
-
+  <div id="revealAllGrid" class="reveal-grid"></div>
   <div class="btn-group">
     <button class="btn btn-primary btn-full" onclick="resetGame()">再玩一局</button>
-    <button class="btn btn-secondary btn-small" onclick="showScreen('start')">回首頁</button>
+    <button class="btn btn-secondary btn-small" onclick="backToStart()">回首頁</button>
   </div>
 </div>
 
-<!-- CREDIT -->
-<div class="credit">
-  Made by <a href="https://www.fromnineon.com" target="_blank">fromnineon 韭點開始</a>
-</div>
+<div class="credit">Made by <a href="https://www.fromnineon.com" target="_blank">fromnineon 韭點開始</a></div>
 
 <script>
 /* ===== WORD BANK ===== */
-const WORD_BANK = [
-  ['水餃', '鍋貼'],
-  ['珍珠奶茶', '波霸奶茶'],
-  ['蝙蝠俠', '蜘蛛人'],
-  ['iPhone', 'Samsung'],
-  ['火鍋', '麻辣燙'],
-  ['牛排', '豬排'],
-  ['麥當勞', '肯德基'],
-  ['Uber', 'Lyft'],
-  ['咖啡', '拿鐵'],
-  ['日本', '韓國'],
-  ['鋼琴', '吉他'],
-  ['游泳', '潛水'],
-  ['貓', '狗'],
-  ['雞蛋', '鴨蛋'],
-  ['籃球', '排球'],
-  ['計程車', '公車'],
-  ['蛋糕', '麵包'],
-  ['微波爐', '烤箱'],
-  ['口紅', '唇蜜'],
-  ['皮鞋', '拖鞋'],
-  ['沙發', '椅子'],
-  ['冰箱', '冷凍庫'],
-  ['Netflix', 'YouTube'],
-  ['Facebook', 'Instagram'],
-  ['醫生', '護士'],
-  ['老師', '教授'],
-  ['高鐵', '火車'],
-  ['地震', '颱風'],
-  ['聖誕節', '跨年'],
-  ['海邊', '游泳池'],
-  ['巧克力', '可可'],
-  ['滷肉飯', '雞肉飯'],
-  ['豆漿', '牛奶'],
-  ['雨傘', '雨衣'],
-  ['漫畫', '動畫'],
-  ['戒指', '手環'],
-  ['行李箱', '背包'],
-  ['WiFi', '藍牙'],
-  ['冰淇淋', '雪糕'],
-  ['眼鏡', '墨鏡'],
-  ['枕頭', '抱枕'],
-  ['番茄醬', '辣椒醬'],
-  ['手錶', '時鐘'],
-  ['腳踏車', '機車'],
+const WORD_BANK=[
+['水餃','鍋貼'],['珍珠奶茶','波霸奶茶'],['蝙蝠俠','蜘蛛人'],['iPhone','Samsung'],
+['火鍋','麻辣燙'],['牛排','豬排'],['麥當勞','肯德基'],['Uber','Lyft'],
+['咖啡','拿鐵'],['日本','韓國'],['鋼琴','吉他'],['游泳','潛水'],
+['貓','狗'],['雞蛋','鴨蛋'],['籃球','排球'],['計程車','公車'],
+['蛋糕','麵包'],['微波爐','烤箱'],['口紅','唇蜜'],['皮鞋','拖鞋'],
+['沙發','椅子'],['冰箱','冷凍庫'],['Netflix','YouTube'],['Facebook','Instagram'],
+['醫生','護士'],['老師','教授'],['高鐵','火車'],['地震','颱風'],
+['聖誕節','跨年'],['海邊','游泳池'],['巧克力','可可'],['滷肉飯','雞肉飯'],
+['豆漿','牛奶'],['雨傘','雨衣'],['漫畫','動畫'],['戒指','手環'],
+['行李箱','背包'],['WiFi','藍牙'],['冰淇淋','雪糕'],['眼鏡','墨鏡'],
+['枕頭','抱枕'],['番茄醬','辣椒醬'],['手錶','時鐘'],['腳踏車','機車'],
 ];
 
-/* ===== GAME STATE ===== */
+/* ===== STATE ===== */
+let usedWordIndices = [];
+let handoffCb = null;
+let descConfirm = false;
+let descConfirmTimer = null;
+let timerSavedSeconds = 0;
+
 let G = {
-  players: 6,
-  spies: 2,
-  hasWhite: false,
+  players: 6, spies: 2, whites: 0,
   wordSource: 'random',
-  civilianWord: '',
-  spyWord: '',
-  roles: [],        // ['civilian','spy','white',...]
-  words: [],         // actual word each player has
-  alive: [],         // boolean array
-  currentReveal: 0,  // which player is revealing
+  civilianWord: '', spyWord: '',
+  roles: [], words: [], alive: [],
+  nicknames: [],
+  currentReveal: 0,
   round: 1,
-  speakerOrder: [],
-  speakerIdx: 0,
-  votes: [],         // votes[voterIdx] = votedForIdx
-  currentVoter: 0,
-  voterOrder: [],
-  selectedVote: -1,
-  timerInterval: null,
-  timerSeconds: 60,
+  speakerOrder: [], speakerIdx: 0,
+  votes: {}, currentVoter: 0, voterOrder: [], selectedVote: -1,
+  timerInterval: null, timerSeconds: 60,
   pendingElimination: -1,
+  currentScreen: 'start',
 };
 
+/* ===== HELPERS ===== */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function dn(i){return G.nicknames[i]||('玩家 '+(i+1))}
+function aliveCount(){return G.alive.filter(Boolean).length}
+function vibrate(ms){try{navigator.vibrate?.(ms)}catch(e){}}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
 /* ===== SCREEN NAV ===== */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  G.currentScreen=id;
   clearTimer();
+  window.scrollTo(0,0);
 }
 
-/* ===== SETUP ===== */
-function suggestSpies(n) {
-  if (n <= 5) return 1;
-  if (n <= 8) return 2;
-  return 3;
+/* ===== SAVE / LOAD ===== */
+function saveState(){
+  const s={...G};
+  delete s.timerInterval;
+  localStorage.setItem('spy-game',JSON.stringify(s));
 }
-
-function adjustPlayers(d) {
-  G.players = Math.max(4, Math.min(10, G.players + d));
-  document.getElementById('playerCount').textContent = G.players;
-  const sug = suggestSpies(G.players);
-  G.spies = Math.min(G.spies, G.players - 2);
-  G.spies = Math.max(1, G.spies);
-  document.getElementById('spyCount').textContent = G.spies;
-  document.getElementById('spySuggestion').textContent = '建議：' + sug + ' 人';
-  updateWhiteAvailability();
+function loadState(){
+  try{const s=JSON.parse(localStorage.getItem('spy-game'));if(s&&s.roles&&s.roles.length>0)return s}catch(e){}return null;
 }
-
-function adjustSpies(d) {
-  const maxSpies = Math.floor((G.players - (G.hasWhite ? 1 : 0)) / 2);
-  G.spies = Math.max(1, Math.min(maxSpies, G.spies + d));
-  document.getElementById('spyCount').textContent = G.spies;
-}
-
-function updateWhiteAvailability() {
-  const toggle = document.getElementById('whiteToggle');
-  const hint = document.getElementById('whiteHint');
-  if (G.players < 6) {
-    toggle.checked = false;
-    toggle.disabled = true;
-    G.hasWhite = false;
-    hint.textContent = '需 6 人以上';
-  } else {
-    toggle.disabled = false;
-    hint.textContent = '沒有題目，靠瞎掰';
-  }
-}
-
-function updateWhiteToggle() {
-  G.hasWhite = document.getElementById('whiteToggle').checked;
-  adjustSpies(0); // re-clamp
-}
-
-function setWordSource(src) {
-  G.wordSource = src;
-  document.querySelectorAll('.word-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.src === src);
-  });
-  document.getElementById('customInputs').classList.toggle('show', src === 'custom');
-}
-
-/* ===== START GAME ===== */
-function startGame() {
-  // Pick words
-  if (G.wordSource === 'custom') {
-    G.civilianWord = document.getElementById('customCivilian').value.trim();
-    G.spyWord = document.getElementById('customSpy').value.trim();
-    if (!G.civilianWord || !G.spyWord) {
-      alert('請輸入平民和臥底的題目！');
-      return;
-    }
-  } else {
-    const pair = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-    // Randomly swap which word goes to civilian vs spy
-    if (Math.random() < 0.5) {
-      G.civilianWord = pair[0];
-      G.spyWord = pair[1];
-    } else {
-      G.civilianWord = pair[1];
-      G.spyWord = pair[0];
-    }
-  }
-
-  // Assign roles
-  G.roles = new Array(G.players).fill('civilian');
-  G.words = new Array(G.players).fill(G.civilianWord);
-  G.alive = new Array(G.players).fill(true);
-
-  // Randomly assign spy indices
-  const indices = Array.from({length: G.players}, (_, i) => i);
-  shuffle(indices);
-  for (let i = 0; i < G.spies; i++) {
-    G.roles[indices[i]] = 'spy';
-    G.words[indices[i]] = G.spyWord;
-  }
-  if (G.hasWhite) {
-    G.roles[indices[G.spies]] = 'white';
-    G.words[indices[G.spies]] = '???';
-  }
-
-  G.round = 1;
-  G.currentReveal = 0;
-
-  // Start word reveal
-  showPassScreen(0);
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
-
-/* ===== WORD REVEAL (PASS & PLAY) ===== */
-function showPassScreen(idx) {
-  G.currentReveal = idx;
-  showScreen('pass');
-  document.getElementById('passPlayer').textContent = '玩家 ' + (idx + 1);
-
-  // Reset flip
-  const card = document.getElementById('flipCard');
-  card.classList.remove('flipped');
-  document.getElementById('passActions').style.display = 'none';
-
-  // Set back content
-  const role = G.roles[idx];
-  const word = G.words[idx];
-  const back = document.getElementById('flipBack');
-  back.parentElement.className = 'flip-card role-' + (role === 'white' ? 'white' : role === 'spy' ? 'spy' : 'civilian');
-
-  document.getElementById('roleBadge').textContent =
-    role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
-  document.getElementById('wordDisplay').textContent = word;
-}
-
-function flipCardToggle() {
-  const card = document.getElementById('flipCard');
-  if (!card.classList.contains('flipped')) {
-    card.classList.add('flipped');
-    document.getElementById('passActions').style.display = 'flex';
-  }
-}
-
-function confirmSeen() {
-  const next = G.currentReveal + 1;
-  if (next < G.players) {
-    showPassScreen(next);
-  } else {
-    startDescribePhase();
-  }
-}
-
-/* ===== DESCRIBE PHASE ===== */
-function startDescribePhase() {
-  // Build speaker order (alive players, shuffled on round 1)
-  G.speakerOrder = [];
-  for (let i = 0; i < G.players; i++) {
-    if (G.alive[i]) G.speakerOrder.push(i);
-  }
-  if (G.round === 1) shuffle(G.speakerOrder);
-  G.speakerIdx = 0;
-  showDescribeScreen();
-}
-
-function showDescribeScreen() {
-  showScreen('describe');
-  const pIdx = G.speakerOrder[G.speakerIdx];
-  document.getElementById('roundNum').textContent = 'ROUND ' + G.round;
-  document.getElementById('aliveCount').textContent = '存活：' + G.alive.filter(Boolean).length + ' 人';
-  document.getElementById('speakerName').textContent = '玩家 ' + (pIdx + 1);
-  startTimer();
-}
-
-function nextSpeaker() {
-  G.speakerIdx++;
-  if (G.speakerIdx >= G.speakerOrder.length) {
-    startVotePhase();
-  } else {
-    showDescribeScreen();
-  }
-}
-
-/* ===== PEEK WORD ===== */
-function peekWord() {
-  const pIdx = G.speakerOrder[G.speakerIdx];
-  showScreen('peek');
-  document.getElementById('peekPlayer').textContent = '玩家 ' + (pIdx + 1);
-
-  const card = document.getElementById('peekFlipCard');
-  card.classList.remove('flipped');
-  document.getElementById('peekActions').style.display = 'none';
-
-  const role = G.roles[pIdx];
-  const word = G.words[pIdx];
-  card.className = 'flip-card role-' + (role === 'white' ? 'white' : role === 'spy' ? 'spy' : 'civilian');
-
-  document.getElementById('peekRoleBadge').textContent =
-    role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
-  document.getElementById('peekWordDisplay').textContent = word;
-}
-
-function peekFlipToggle() {
-  const card = document.getElementById('peekFlipCard');
-  if (!card.classList.contains('flipped')) {
-    card.classList.add('flipped');
-    document.getElementById('peekActions').style.display = 'flex';
-  }
-}
-
-function closePeek() {
-  showDescribeScreen();
-}
-
-/* ===== TIMER ===== */
-function startTimer() {
-  clearTimer();
-  G.timerSeconds = 60;
-  const el = document.getElementById('timer');
-  el.textContent = G.timerSeconds;
-  el.classList.remove('warning');
-  G.timerInterval = setInterval(() => {
-    G.timerSeconds--;
-    el.textContent = G.timerSeconds;
-    if (G.timerSeconds <= 10) el.classList.add('warning');
-    if (G.timerSeconds <= 0) {
-      clearTimer();
-      nextSpeaker();
-    }
-  }, 1000);
-}
-
-function clearTimer() {
-  if (G.timerInterval) {
-    clearInterval(G.timerInterval);
-    G.timerInterval = null;
-  }
-}
-
-/* ===== VOTE PHASE ===== */
-function startVotePhase() {
-  G.votes = {};
-  G.voterOrder = G.speakerOrder.slice(); // same order
-  G.currentVoter = 0;
-  G.selectedVote = -1;
-  showVoteScreen();
-}
-
-function showVoteScreen() {
-  showScreen('vote');
-  const voterIdx = G.voterOrder[G.currentVoter];
-  document.getElementById('voteRoundNum').textContent = 'ROUND ' + G.round;
-  document.getElementById('voteAliveCount').textContent = '存活：' + G.alive.filter(Boolean).length + ' 人';
-  document.getElementById('voterPrompt').textContent = '玩家 ' + (voterIdx + 1) + ' 請投票';
-  G.selectedVote = -1;
-  document.getElementById('confirmVoteBtn').disabled = true;
-
-  // Build vote grid
-  const grid = document.getElementById('voteGrid');
-  grid.innerHTML = '';
-  for (let i = 0; i < G.players; i++) {
-    const card = document.createElement('div');
-    card.className = 'vote-card';
-    if (!G.alive[i]) {
-      card.classList.add('eliminated');
-    } else if (i === voterIdx) {
-      card.classList.add('disabled');
-    }
-    card.innerHTML = `
-      <span class="player-num">${i + 1}</span>
-      <span class="player-label">玩家</span>
-    `;
-    if (G.alive[i] && i !== voterIdx) {
-      card.addEventListener('click', () => selectVote(i, card));
-    }
-    grid.appendChild(card);
-  }
-}
-
-function selectVote(targetIdx, cardEl) {
-  G.selectedVote = targetIdx;
-  document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
-  cardEl.classList.add('selected');
-  document.getElementById('confirmVoteBtn').disabled = false;
-}
-
-function confirmVote() {
-  if (G.selectedVote < 0) return;
-  const voterIdx = G.voterOrder[G.currentVoter];
-  G.votes[voterIdx] = G.selectedVote;
-  G.currentVoter++;
-
-  if (G.currentVoter < G.voterOrder.length) {
-    showVoteScreen();
-  } else {
-    showVoteResult();
-  }
-}
-
-/* ===== VOTE RESULT ===== */
-function showVoteResult() {
-  showScreen('result');
-
-  // Tally
-  const tally = {};
-  for (const voter in G.votes) {
-    const target = G.votes[voter];
-    tally[target] = (tally[target] || 0) + 1;
-  }
-
-  // Sort by votes desc
-  const sorted = Object.entries(tally)
-    .map(([idx, count]) => ({idx: parseInt(idx), count}))
-    .sort((a, b) => b.count - a.count);
-
-  const maxVotes = sorted[0]?.count || 0;
-  const topPlayers = sorted.filter(s => s.count === maxVotes);
-  const isTie = topPlayers.length > 1;
-
-  // Render result list
-  const list = document.getElementById('resultList');
-  list.innerHTML = '';
-  sorted.forEach(({idx, count}) => {
-    const row = document.createElement('div');
-    row.className = 'result-row';
-    if (count === maxVotes) row.classList.add('top-vote');
-    const pct = (count / G.voterOrder.length) * 100;
-    row.innerHTML = `
-      <span class="r-name">玩家 ${idx + 1}</span>
-      <div class="result-bar-wrap"><div class="result-bar" style="width: 0%"></div></div>
-      <span class="r-votes">${count}</span>
-    `;
-    list.appendChild(row);
-    // Animate bar
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        row.querySelector('.result-bar').style.width = pct + '%';
-      });
-    });
-  });
-
-  const tieMsg = document.getElementById('tieMessage');
-  const elimReveal = document.getElementById('eliminationReveal');
-  const nextBtn = document.getElementById('resultNextBtn');
-
-  if (isTie) {
-    tieMsg.style.display = 'block';
-    elimReveal.style.display = 'none';
-    G.pendingElimination = -1;
-    nextBtn.textContent = '進入下一輪';
-  } else {
-    tieMsg.style.display = 'none';
-    elimReveal.style.display = 'block';
-    const elimIdx = topPlayers[0].idx;
-    G.pendingElimination = elimIdx;
-
-    const role = G.roles[elimIdx];
-    document.getElementById('elimPlayer').textContent = '玩家 ' + (elimIdx + 1);
-    document.getElementById('elimPlayer').style.color =
-      role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--lime)';
-
-    const roleEl = document.getElementById('elimRole');
-    roleEl.textContent = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
-    roleEl.style.background = role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--green)';
-    roleEl.style.color = role === 'civilian' ? '#fff' : 'var(--black)';
-
-    document.getElementById('elimWord').textContent = '題目：' + G.words[elimIdx];
-
-    // Check if white was eliminated
-    if (role === 'white') {
-      nextBtn.textContent = '白板猜詞';
-    } else {
-      nextBtn.textContent = '繼續遊戲';
-    }
-  }
-}
-
-function afterVoteResult() {
-  if (G.pendingElimination >= 0) {
-    const role = G.roles[G.pendingElimination];
-    if (role === 'white') {
-      // Mr. White gets to guess
-      showScreen('white-guess');
-      document.getElementById('whiteGuessInput').value = '';
-      document.getElementById('whiteGuessInput').focus();
-      return;
-    }
-    // Eliminate
-    G.alive[G.pendingElimination] = false;
-
-    // Check win condition
-    const result = checkWin();
-    if (result) {
-      showGameOver(result);
-      return;
-    }
-  }
-
-  // Next round
-  G.round++;
+function clearSave(){localStorage.removeItem('spy-game');document.getElementById('resumeBanner').style.display='none'}
+function resumeGame(){
+  const s=loadState();
+  if(!s)return;
+  Object.assign(G,s);
+  G.timerInterval=null;
   startDescribePhase();
 }
 
-/* ===== MR. WHITE GUESS ===== */
-function submitWhiteGuess() {
-  const guess = document.getElementById('whiteGuessInput').value.trim();
-  if (!guess) {
-    alert('請輸入你的猜測！');
-    return;
+/* ===== HANDOFF ===== */
+function showHandoff(icon,msg,name,sub,btnText,cb){
+  document.getElementById('handoffIcon').textContent=icon;
+  document.getElementById('handoffMsg').textContent=msg;
+  document.getElementById('handoffName').textContent=name;
+  document.getElementById('handoffSub').textContent=sub||'';
+  document.getElementById('handoffBtn').textContent=btnText;
+  handoffCb=cb;
+  showScreen('handoff');
+}
+function onHandoff(){if(handoffCb)handoffCb()}
+
+/* ===== SETUP ===== */
+function suggestSpies(n){return n<=5?1:n<=8?2:3}
+function maxSpecial(){return Math.floor((G.players-1)/2)}
+
+function adj(field,d){
+  const ms=maxSpecial();
+  if(field==='players'){
+    G.players=Math.max(4,Math.min(10,G.players+d));
+    if(G.spies+G.whites>maxSpecial()){
+      G.whites=Math.min(G.whites,maxSpecial()-1);
+      if(G.whites<0)G.whites=0;
+      G.spies=Math.min(G.spies,maxSpecial()-G.whites);
+      G.spies=Math.max(1,G.spies);
+    }
+  }else if(field==='spies'){
+    G.spies=Math.max(1,Math.min(maxSpecial()-G.whites,G.spies+d));
+  }else if(field==='whites'){
+    G.whites=Math.max(0,Math.min(maxSpecial()-G.spies,G.whites+d));
+  }
+  updateSetupUI();
+}
+
+function updateSetupUI(){
+  document.getElementById('valPlayers').textContent=G.players;
+  document.getElementById('valSpies').textContent=G.spies;
+  document.getElementById('valWhites').textContent=G.whites;
+  document.getElementById('spyHint').textContent='建議：'+suggestSpies(G.players)+' 人';
+  const civilians=G.players-G.spies-G.whites;
+  document.getElementById('whiteHint').textContent=civilians<2?'平民人數不足':'沒有題目，靠瞎掰';
+}
+
+function setWordSource(src){
+  G.wordSource=src;
+  document.querySelectorAll('.word-tab').forEach(t=>t.classList.toggle('active',t.dataset.src===src));
+  document.getElementById('customInputs').classList.toggle('show',src==='custom');
+}
+
+/* ===== START GAME ===== */
+function pickRandomPair(){
+  let avail=WORD_BANK.map((_,i)=>i).filter(i=>!usedWordIndices.includes(i));
+  if(avail.length===0){usedWordIndices=[];avail=WORD_BANK.map((_,i)=>i)}
+  const pick=avail[Math.floor(Math.random()*avail.length)];
+  usedWordIndices.push(pick);
+  return WORD_BANK[pick];
+}
+
+function startGame(){
+  // Validate
+  const civilians=G.players-G.spies-G.whites;
+  if(civilians<2){alert('平民人數不足，請調整設定');return}
+  if(G.spies<1){alert('至少需要 1 位臥底');return}
+
+  if(G.wordSource==='custom'){
+    G.civilianWord=document.getElementById('customCivilian').value.trim();
+    G.spyWord=document.getElementById('customSpy').value.trim();
+    if(!G.civilianWord||!G.spyWord){alert('請輸入平民和臥底的題目！');return}
+  }else{
+    const pair=pickRandomPair();
+    if(Math.random()<0.5){G.civilianWord=pair[0];G.spyWord=pair[1]}
+    else{G.civilianWord=pair[1];G.spyWord=pair[0]}
   }
 
-  G.alive[G.pendingElimination] = false;
+  G.roles=new Array(G.players).fill('civilian');
+  G.words=new Array(G.players).fill(G.civilianWord);
+  G.alive=new Array(G.players).fill(true);
+  G.nicknames=new Array(G.players).fill('');
+  G.round=1;G.currentReveal=0;G.pendingElimination=-1;
 
-  if (guess === G.civilianWord) {
-    showGameOver('white');
-  } else {
-    const result = checkWin();
-    if (result) {
-      showGameOver(result);
-    } else {
-      G.round++;
+  const idx=Array.from({length:G.players},(_,i)=>i);
+  shuffle(idx);
+  for(let i=0;i<G.spies;i++){G.roles[idx[i]]='spy';G.words[idx[i]]=G.spyWord}
+  for(let i=0;i<G.whites;i++){G.roles[idx[G.spies+i]]='white';G.words[idx[G.spies+i]]='???'}
+
+  clearSave();
+  beginRevealPhase(0);
+}
+
+/* ===== REVEAL PHASE ===== */
+function beginRevealPhase(idx){
+  G.currentReveal=idx;
+  showHandoff('📱','請將手機交給',G.nicknames[idx]||('玩家 '+(idx+1)),'不要偷看別人的牌！','我準備好了',()=>showReveal(idx));
+}
+
+function showReveal(idx){
+  showScreen('reveal');
+  const card=document.getElementById('flipCard');
+  card.classList.remove('flipped');
+  document.getElementById('revealActions').style.display='none';
+
+  const isWhite=G.roles[idx]==='white';
+  const back=document.getElementById('flipBack');
+  back.classList.toggle('is-white',isWhite);
+  document.getElementById('roleHint').textContent=isWhite?'你是白板':'你的題目';
+  document.getElementById('wordDisplay').textContent=G.words[idx];
+
+  const ni=document.getElementById('nicknameInput');
+  ni.value=G.nicknames[idx]||'';
+  ni.placeholder='例：小明';
+}
+
+function flipToggle(){
+  const card=document.getElementById('flipCard');
+  if(card.classList.contains('flipped')){
+    card.classList.remove('flipped');
+    document.getElementById('revealActions').style.display='none';
+    vibrate(30);
+  }else{
+    card.classList.add('flipped');
+    document.getElementById('revealActions').style.display='block';
+    vibrate(50);
+  }
+}
+
+function confirmSeen(){
+  const idx=G.currentReveal;
+  const name=document.getElementById('nicknameInput').value.trim();
+  if(name)G.nicknames[idx]=name;
+
+  // Flip card back first
+  document.getElementById('flipCard').classList.remove('flipped');
+  document.getElementById('revealActions').style.display='none';
+
+  const next=idx+1;
+  setTimeout(()=>{
+    if(next<G.players){
+      beginRevealPhase(next);
+    }else{
+      saveState();
       startDescribePhase();
     }
+  },500);
+}
+
+/* ===== DESCRIBE PHASE ===== */
+function startDescribePhase(){
+  if(G.round===1){
+    G.speakerOrder=[];
+    for(let i=0;i<G.players;i++){if(G.alive[i])G.speakerOrder.push(i)}
+    shuffle(G.speakerOrder);
+  }else{
+    // Maintain round 1 order, remove eliminated players
+    G.speakerOrder=G.speakerOrder.filter(i=>G.alive[i]);
+  }
+  G.speakerIdx=0;
+  showDescribe();
+}
+
+function showDescribe(){
+  showScreen('describe');
+  const p=G.speakerOrder[G.speakerIdx];
+  document.getElementById('roundNum').textContent='ROUND '+G.round;
+  document.getElementById('aliveCount').textContent='存活：'+aliveCount()+' 人';
+  document.getElementById('speakerName').textContent=dn(p);
+  resetDescConfirm();
+  startTimer();
+}
+
+function onDescribeDone(){
+  if(!descConfirm){
+    descConfirm=true;
+    const btn=document.getElementById('describeDoneBtn');
+    btn.textContent='確定完成？再按一次';
+    btn.classList.add('btn-confirm-state');
+    vibrate(30);
+    descConfirmTimer=setTimeout(resetDescConfirm,3000);
+  }else{
+    clearTimeout(descConfirmTimer);
+    resetDescConfirm();
+    nextSpeaker();
+  }
+}
+function resetDescConfirm(){
+  descConfirm=false;
+  const btn=document.getElementById('describeDoneBtn');
+  if(btn){btn.textContent='描述完畢';btn.classList.remove('btn-confirm-state')}
+}
+
+function nextSpeaker(){
+  G.speakerIdx++;
+  if(G.speakerIdx>=G.speakerOrder.length){
+    showVoteMethod();
+  }else{
+    showDescribe();
+  }
+}
+
+/* ===== TIMER ===== */
+function startTimer(){
+  clearTimer();
+  G.timerSeconds=60;
+  const el=document.getElementById('timer');
+  el.textContent=G.timerSeconds;
+  el.classList.remove('warning');
+  G.timerInterval=setInterval(()=>{
+    G.timerSeconds--;
+    el.textContent=G.timerSeconds;
+    if(G.timerSeconds<=10)el.classList.add('warning');
+    if(G.timerSeconds<=0){clearTimer();vibrate(200);nextSpeaker()}
+  },1000);
+}
+function clearTimer(){if(G.timerInterval){clearInterval(G.timerInterval);G.timerInterval=null}}
+function pauseTimer(){clearTimer();timerSavedSeconds=G.timerSeconds}
+function resumeTimer(){
+  G.timerSeconds=timerSavedSeconds;
+  const el=document.getElementById('timer');
+  el.textContent=G.timerSeconds;
+  el.classList.toggle('warning',G.timerSeconds<=10);
+  G.timerInterval=setInterval(()=>{
+    G.timerSeconds--;
+    el.textContent=G.timerSeconds;
+    if(G.timerSeconds<=10)el.classList.add('warning');
+    if(G.timerSeconds<=0){clearTimer();vibrate(200);nextSpeaker()}
+  },1000);
+}
+
+/* ===== PEEK ===== */
+function peekWord(){
+  pauseTimer();
+  const p=G.speakerOrder[G.speakerIdx];
+  showScreen('peek');
+  document.getElementById('peekPlayer').textContent=dn(p);
+  const card=document.getElementById('peekFlip');
+  card.classList.remove('flipped');
+  document.getElementById('peekActions').style.display='none';
+
+  const isWhite=G.roles[p]==='white';
+  const back=document.getElementById('peekBack');
+  back.classList.toggle('is-white',isWhite);
+  document.getElementById('peekHint').textContent=isWhite?'你是白板':'你的題目';
+  document.getElementById('peekWord').textContent=G.words[p];
+}
+function peekFlipToggle(){
+  const card=document.getElementById('peekFlip');
+  if(card.classList.contains('flipped')){
+    card.classList.remove('flipped');
+    document.getElementById('peekActions').style.display='none';
+  }else{
+    card.classList.add('flipped');
+    document.getElementById('peekActions').style.display='flex';
+    vibrate(50);
+  }
+}
+function closePeek(){
+  document.getElementById('peekFlip').classList.remove('flipped');
+  setTimeout(()=>{
+    showScreen('describe');
+    document.getElementById('speakerName').textContent=dn(G.speakerOrder[G.speakerIdx]);
+    resumeTimer();
+  },400);
+}
+
+/* ===== VOTE METHOD ===== */
+function showVoteMethod(){
+  showScreen('vote-method');
+  document.getElementById('vmRound').textContent='ROUND '+G.round;
+  document.getElementById('vmAlive').textContent='存活：'+aliveCount()+' 人';
+}
+
+/* ===== DIGITAL VOTE ===== */
+function startDigitalVote(){
+  G.votes={};
+  G.voterOrder=G.speakerOrder.slice();
+  G.currentVoter=0;
+  G.selectedVote=-1;
+  const v=G.voterOrder[0];
+  showHandoff('🗳️','請將手機交給',dn(v),'選出你認為的臥底','準備投票',()=>showVoteScreen());
+}
+
+function showVoteScreen(){
+  showScreen('vote');
+  const vi=G.voterOrder[G.currentVoter];
+  document.getElementById('voteRound').textContent='ROUND '+G.round;
+  document.getElementById('voteAlive').textContent='存活：'+aliveCount()+' 人';
+  document.getElementById('voterPrompt').textContent=dn(vi)+' 請投票';
+  G.selectedVote=-1;
+  document.getElementById('confirmVoteBtn').disabled=true;
+
+  const grid=document.getElementById('voteGrid');
+  grid.innerHTML='';
+  for(let i=0;i<G.players;i++){
+    const c=document.createElement('div');
+    c.className='vote-card';
+    if(!G.alive[i])c.classList.add('eliminated');
+    else if(i===vi)c.classList.add('disabled');
+    const label=G.nicknames[i]||('玩家 '+(i+1));
+    c.innerHTML='<span class="player-num">'+(i+1)+'</span><span class="player-label">'+esc(label)+'</span>';
+    if(G.alive[i]&&i!==vi){
+      c.addEventListener('click',()=>{
+        G.selectedVote=i;
+        document.querySelectorAll('.vote-card').forEach(x=>x.classList.remove('selected'));
+        c.classList.add('selected');
+        document.getElementById('confirmVoteBtn').disabled=false;
+        vibrate(30);
+      });
+    }
+    grid.appendChild(c);
+  }
+}
+
+function confirmVote(){
+  if(G.selectedVote<0)return;
+  G.votes[G.voterOrder[G.currentVoter]]=G.selectedVote;
+  G.currentVoter++;
+  vibrate(50);
+  if(G.currentVoter<G.voterOrder.length){
+    const v=G.voterOrder[G.currentVoter];
+    showHandoff('🗳️','請將手機交給',dn(v),'選出你認為的臥底','準備投票',()=>showVoteScreen());
+  }else{
+    showDigitalResult();
+  }
+}
+
+/* ===== HAND VOTE ===== */
+function startHandVote(){
+  showScreen('hand-vote');
+  document.getElementById('hvRound').textContent='ROUND '+G.round;
+  document.getElementById('hvAlive').textContent='存活：'+aliveCount()+' 人';
+
+  const grid=document.getElementById('handVoteGrid');
+  grid.innerHTML='';
+  for(let i=0;i<G.players;i++){
+    if(!G.alive[i])continue;
+    const btn=document.createElement('button');
+    btn.className='hand-vote-btn';
+    btn.innerHTML='<span class="hv-num">'+(i+1)+'</span>'+esc(dn(i));
+    const pi=i;
+    btn.addEventListener('click',()=>confirmHandVote(pi));
+    grid.appendChild(btn);
+  }
+  const skip=document.createElement('button');
+  skip.className='hand-vote-btn hv-skip';
+  skip.textContent='不淘汰（平票）';
+  skip.addEventListener('click',()=>confirmHandVote(-1));
+  grid.appendChild(skip);
+}
+
+let handVotePending=-1;
+let handVoteConfirm=false;
+let handVoteTimer=null;
+
+function confirmHandVote(idx){
+  if(!handVoteConfirm||handVotePending!==idx){
+    // First tap — highlight and ask to confirm
+    handVotePending=idx;
+    handVoteConfirm=true;
+    clearTimeout(handVoteTimer);
+    document.querySelectorAll('.hand-vote-btn').forEach(b=>{
+      b.style.borderColor='';b.style.background='';b.textContent===b.dataset.origText||0;
+    });
+    const btns=document.querySelectorAll('.hand-vote-btn');
+    btns.forEach(b=>{b.style.opacity='0.4'});
+    const target=idx===-1?btns[btns.length-1]:Array.from(btns).find(b=>b.querySelector('.hv-num')?.textContent==String(idx+1));
+    if(target){target.style.opacity='1';target.style.borderColor='var(--teal)';target.style.background='rgba(132,210,221,0.1)'}
+    vibrate(30);
+    handVoteTimer=setTimeout(()=>{
+      handVoteConfirm=false;
+      document.querySelectorAll('.hand-vote-btn').forEach(b=>{b.style.opacity='';b.style.borderColor='';b.style.background=''});
+    },3000);
+  }else{
+    // Second tap — confirm
+    clearTimeout(handVoteTimer);
+    handVoteConfirm=false;
+    if(idx===-1){G.pendingElimination=-1;showTieResult()}
+    else{G.pendingElimination=idx;showElimResult(idx)}
+  }
+}
+
+/* ===== RESULTS ===== */
+function showDigitalResult(){
+  showScreen('result');
+  const tally={};
+  for(const v in G.votes){const t=G.votes[v];tally[t]=(tally[t]||0)+1}
+  const sorted=Object.entries(tally).map(([i,c])=>({idx:+i,count:c})).sort((a,b)=>b.count-a.count);
+  const max=sorted[0]?.count||0;
+  const tops=sorted.filter(s=>s.count===max);
+  const isTie=tops.length>1;
+
+  const list=document.getElementById('resultList');
+  list.innerHTML='';list.style.display='flex';
+  sorted.forEach(({idx,count})=>{
+    const row=document.createElement('div');
+    row.className='result-row';
+    if(count===max)row.classList.add('top-vote');
+    const pct=(count/G.voterOrder.length)*100;
+    row.innerHTML='<span class="r-name">'+esc(dn(idx))+'</span><div class="result-bar-wrap"><div class="result-bar" style="width:0%"></div></div><span class="r-votes">'+count+'</span>';
+    list.appendChild(row);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{row.querySelector('.result-bar').style.width=pct+'%'}));
+  });
+
+  if(isTie){showTieUI()}
+  else{G.pendingElimination=tops[0].idx;showElimUI(tops[0].idx)}
+}
+
+function showTieResult(){
+  showScreen('result');
+  document.getElementById('resultList').style.display='none';
+  showTieUI();
+}
+
+function showTieUI(){
+  document.getElementById('tieMessage').style.display='block';
+  document.getElementById('eliminationReveal').style.display='none';
+  G.pendingElimination=-1;
+  document.getElementById('resultNextBtn').textContent='進入下一輪';
+}
+
+function showElimResult(idx){
+  showScreen('result');
+  document.getElementById('resultList').style.display='none';
+  document.getElementById('tieMessage').style.display='none';
+  G.pendingElimination=idx;
+  showElimUI(idx);
+}
+
+function showElimUI(idx){
+  document.getElementById('tieMessage').style.display='none';
+  const reveal=document.getElementById('eliminationReveal');
+  reveal.style.display='block';
+  const role=G.roles[idx];
+  document.getElementById('elimPlayer').textContent=dn(idx);
+  document.getElementById('elimPlayer').style.color=role==='spy'?'var(--teal)':role==='white'?'var(--pink)':'var(--lime)';
+  const re=document.getElementById('elimRole');
+  re.textContent=role==='civilian'?'平民':role==='spy'?'臥底':'白板';
+  re.style.background=role==='spy'?'var(--teal)':role==='white'?'var(--pink)':'var(--green)';
+  re.style.color=role==='civilian'?'#fff':'var(--black)';
+  document.getElementById('elimWord').textContent='題目：'+G.words[idx];
+  document.getElementById('resultNextBtn').textContent=role==='white'?'白板猜詞':'繼續遊戲';
+  vibrate(100);
+}
+
+function afterResult(){
+  if(G.pendingElimination>=0){
+    const role=G.roles[G.pendingElimination];
+    if(role==='white'){
+      showScreen('white-guess');
+      document.getElementById('whiteGuessInput').value='';
+      setTimeout(()=>document.getElementById('whiteGuessInput').focus(),400);
+      return;
+    }
+    G.alive[G.pendingElimination]=false;
+    const w=checkWin();
+    if(w){showGameOver(w);return}
+  }
+  G.round++;
+  saveState();
+  startDescribePhase();
+}
+
+/* ===== WHITE GUESS ===== */
+function submitWhiteGuess(){
+  const guess=document.getElementById('whiteGuessInput').value.trim();
+  if(!guess){alert('請輸入你的猜測！');return}
+  G.alive[G.pendingElimination]=false;
+  if(guess.toLowerCase()===G.civilianWord.toLowerCase()){showGameOver('white')}
+  else{
+    const w=checkWin();
+    if(w){showGameOver(w)}
+    else{G.round++;saveState();startDescribePhase()}
   }
 }
 
 /* ===== WIN CHECK ===== */
-function checkWin() {
-  let aliveCivilians = 0;
-  let aliveSpies = 0;
-  let aliveWhite = 0;
-
-  for (let i = 0; i < G.players; i++) {
-    if (!G.alive[i]) continue;
-    if (G.roles[i] === 'civilian') aliveCivilians++;
-    else if (G.roles[i] === 'spy') aliveSpies++;
-    else if (G.roles[i] === 'white') aliveWhite++;
+function checkWin(){
+  let c=0,s=0,w=0;
+  for(let i=0;i<G.players;i++){
+    if(!G.alive[i])continue;
+    if(G.roles[i]==='civilian')c++;
+    else if(G.roles[i]==='spy')s++;
+    else w++;
   }
-
-  const totalAlive = aliveCivilians + aliveSpies + aliveWhite;
-
-  // All spies eliminated (and white eliminated) = civilian wins
-  if (aliveSpies === 0 && aliveWhite === 0) return 'civilian';
-
-  // Spies win: when remaining players <= 3 and spy still alive
-  // More precisely: civilians can no longer outvote spies
-  if (totalAlive <= 3 && aliveSpies > 0) return 'spy';
-
-  // Edge case: spies >= civilians
-  if (aliveSpies >= aliveCivilians + aliveWhite) return 'spy';
-
+  if(s===0&&w===0)return'civilian';
+  if(c+s+w<=3&&s>0)return'spy';
+  if(s>=c+w)return'spy';
   return null;
 }
 
 /* ===== GAME OVER ===== */
-function showGameOver(winner) {
+function showGameOver(winner){
+  clearSave();
   showScreen('gameover');
+  const emoji=document.getElementById('winnerEmoji');
+  const text=document.getElementById('winnerText');
+  if(winner==='civilian'){emoji.textContent='🎉';text.innerHTML='<span class="winner-civilian">平民陣營獲勝！</span>'}
+  else if(winner==='spy'){emoji.textContent='🕵️';text.innerHTML='<span class="winner-spy">臥底陣營獲勝！</span>'}
+  else{emoji.textContent='🃏';text.innerHTML='<span class="winner-white">白板逆轉獲勝！</span>'}
 
-  const emoji = document.getElementById('winnerEmoji');
-  const text = document.getElementById('winnerText');
+  vibrate([100,50,100,50,200]);
 
-  if (winner === 'civilian') {
-    emoji.textContent = '🎉';
-    text.innerHTML = '<span class="winner-civilian">平民陣營獲勝！</span>';
-  } else if (winner === 'spy') {
-    emoji.textContent = '🕵️';
-    text.innerHTML = '<span class="winner-spy">臥底陣營獲勝！</span>';
-  } else if (winner === 'white') {
-    emoji.textContent = '🃏';
-    text.innerHTML = '<span class="winner-white">白板逆轉獲勝！</span>';
-  }
-
-  // Reveal all
-  const grid = document.getElementById('revealGrid');
-  grid.innerHTML = '';
-  for (let i = 0; i < G.players; i++) {
-    const role = G.roles[i];
-    const cls = role === 'spy' ? 'rc-spy' : role === 'white' ? 'rc-white' : 'rc-civilian';
-    const roleName = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
-    const card = document.createElement('div');
-    card.className = 'reveal-card ' + cls;
-    card.innerHTML = `
-      <div class="rv-num">P${i + 1}</div>
-      <div class="rv-role">${roleName}</div>
-      <div class="rv-word">${G.words[i]}</div>
-    `;
-    grid.appendChild(card);
+  const grid=document.getElementById('revealAllGrid');
+  grid.innerHTML='';
+  for(let i=0;i<G.players;i++){
+    const r=G.roles[i];
+    const cls=r==='spy'?'rc-spy':r==='white'?'rc-white':'rc-civilian';
+    const rn=r==='civilian'?'平民':r==='spy'?'臥底':'白板';
+    const c=document.createElement('div');
+    c.className='reveal-card '+cls;
+    c.innerHTML='<div class="rv-num">P'+(i+1)+'</div><div class="rv-name">'+esc(dn(i))+'</div><div class="rv-role">'+esc(rn)+'</div><div class="rv-word">'+esc(G.words[i])+'</div>';
+    grid.appendChild(c);
   }
 }
 
 /* ===== RESET ===== */
-function resetGame() {
-  G.round = 1;
-  G.pendingElimination = -1;
-  showScreen('setup');
+function resetGame(){
+  G.round=1;G.pendingElimination=-1;
+  G.roles=[];G.words=[];G.alive=[];G.nicknames=[];G.speakerOrder=[];G.votes={};
+  clearSave();
+  showScreen('setup');updateSetupUI();
+}
+function backToStart(){
+  G.roles=[];G.words=[];G.alive=[];G.nicknames=[];G.speakerOrder=[];G.votes={};
+  clearSave();showScreen('start');
 }
 
 /* ===== INIT ===== */
-updateWhiteAvailability();
+updateSetupUI();
+
+// Check saved game
+const saved=loadState();
+if(saved&&saved.roles&&saved.roles.length>0&&saved.currentScreen!=='start'&&saved.currentScreen!=='setup'){
+  document.getElementById('resumeBanner').style.display='block';
+}
+
+// PWA manifest
+try{
+  const m={name:'誰是臥底',short_name:'臥底',start_url:'.',display:'standalone',background_color:'#0A0A0A',theme_color:'#0A0A0A',
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>",sizes:'any',type:'image/svg+xml'}]};
+  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(b);
+}catch(e){}
+
+// Lock orientation
+try{screen.orientation?.lock?.('portrait').catch(()=>{})}catch(e){}
+
+// Prevent accidental refresh
+window.addEventListener('beforeunload',e=>{if(G.roles.length>0&&G.currentScreen!=='start'&&G.currentScreen!=='gameover'){e.preventDefault();e.returnValue=''}});
 </script>
 </body>
 </html>
