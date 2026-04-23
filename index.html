@@ -1070,7 +1070,7 @@ function showGameOver(winner){
   const emoji=document.getElementById('winnerEmoji');
   const text=document.getElementById('winnerText');
   if(winner==='civilian'){emoji.textContent='🎉';text.innerHTML='<span class="winner-civilian">平民陣營獲勝！</span>'}
-  else if(winner==='spy'){emoji.innerHTML='<img src="mascot.png" style="width:48px;height:auto">';text.innerHTML='<span class="winner-spy">臥底陣營獲勝！</span>'}
+  else if(winner==='spy'){emoji.innerHTML='<img src="mascot.png" style="width:120px;height:auto">';text.innerHTML='<span class="winner-spy">臥底陣營獲勝！</span>'}
   else{emoji.textContent='🃏';text.innerHTML='<span class="winner-white">白板逆轉獲勝！</span>'}
 
   vibrate([100,50,100,50,200]);
