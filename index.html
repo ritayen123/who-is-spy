@@ -292,27 +292,27 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">遊戲設定</div>
   <div class="card">
     <div class="setup-row">
-      <div class="setup-label">玩家人數</div>
+      <div class="setup-label">玩家人數<small>4~10 人</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adj('players',-1)">−</button>
+        <button class="stepper-btn" id="btnPlayerMinus" onclick="adj('players',-1)">−</button>
         <span id="valPlayers" class="stepper-val">6</span>
-        <button class="stepper-btn" onclick="adj('players',1)">+</button>
+        <button class="stepper-btn" id="btnPlayerPlus" onclick="adj('players',1)">+</button>
       </div>
     </div>
     <div class="setup-row">
       <div class="setup-label">臥底人數<small id="spyHint">建議：2 人</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adj('spies',-1)">−</button>
+        <button class="stepper-btn" id="btnSpyMinus" onclick="adj('spies',-1)">−</button>
         <span id="valSpies" class="stepper-val">2</span>
-        <button class="stepper-btn" onclick="adj('spies',1)">+</button>
+        <button class="stepper-btn" id="btnSpyPlus" onclick="adj('spies',1)">+</button>
       </div>
     </div>
     <div class="setup-row">
       <div class="setup-label">白板人數<small id="whiteHint">沒有題目，靠瞎掰</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adj('whites',-1)">−</button>
+        <button class="stepper-btn" id="btnWhiteMinus" onclick="adj('whites',-1)">−</button>
         <span id="valWhites" class="stepper-val">0</span>
-        <button class="stepper-btn" onclick="adj('whites',1)">+</button>
+        <button class="stepper-btn" id="btnWhitePlus" onclick="adj('whites',1)">+</button>
       </div>
     </div>
     <div class="setup-row col">
@@ -605,7 +605,16 @@ function updateSetupUI(){
   document.getElementById('valWhites').textContent=G.whites;
   document.getElementById('spyHint').textContent='建議：'+suggestSpies(G.players)+' 人';
   const civilians=G.players-G.spies-G.whites;
-  document.getElementById('whiteHint').textContent=civilians<2?'平民人數不足':'沒有題目，靠瞎掰';
+  const ms=maxSpecial();
+  document.getElementById('whiteHint').textContent=civilians<2?'⚠️ 平民人數不足':G.spies+G.whites>=ms?'已達特殊角色上限':'沒有題目，靠瞎掰';
+
+  // Disable stepper buttons at limits
+  document.getElementById('btnPlayerMinus').disabled=G.players<=4;
+  document.getElementById('btnPlayerPlus').disabled=G.players>=10;
+  document.getElementById('btnSpyMinus').disabled=G.spies<=1;
+  document.getElementById('btnSpyPlus').disabled=G.spies>=ms-G.whites;
+  document.getElementById('btnWhiteMinus').disabled=G.whites<=0;
+  document.getElementById('btnWhitePlus').disabled=G.whites>=ms-G.spies;
 }
 
 function setWordSource(src){
