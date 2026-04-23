@@ -2,14 +2,14 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>誰是臥底 | 韭點開始 fromnineon</title>
 <meta name="description" content="誰是臥底線上派對遊戲，一支手機就能玩！由韭點開始 fromnineon 製作。">
 <!-- OG -->
 <meta property="og:title" content="誰是臥底 | fromnineon 韭點開始">
 <meta property="og:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://game-smoky-eight.vercel.app">
+<meta property="og:url" content="https://spy.fromnineon.com">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="誰是臥底 | fromnineon 韭點開始">
 <meta name="twitter:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
@@ -23,19 +23,23 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0A0A0A">
 <link rel="manifest" id="pwa-manifest">
+<!-- GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K318HMNR62"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-K318HMNR62');</script>
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{font-size:16px;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 body{font-family:'Noto Sans TC',sans-serif;background:#0A0A0A;color:#fff;min-height:100dvh;overflow-x:hidden;position:relative;padding-bottom:env(safe-area-inset-bottom,0)}
+body.keyboard-open .credit{display:none}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(170,249,82,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(170,249,82,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
 :root{--lime:#AAF952;--teal:#84D2DD;--green:#01A94D;--pink:#F1B9E1;--black:#0A0A0A;--white:#FFF;--card-bg:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.1);--font-pixel:'Press Start 2P',monospace;--font-body:'Noto Sans TC',sans-serif}
 
 /* ===== LAYOUT ===== */
 .screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0));position:relative;z-index:1;animation:fadeIn .4s ease}
-.screen.scrollable{justify-content:flex-start;padding-top:48px}
+.screen.scrollable{justify-content:flex-start;padding-top:48px;overflow-y:auto}
 .screen.active{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -52,7 +56,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
 .btn-dark{background:var(--green);color:#fff}
 .btn-dark:hover{transform:translateY(-3px);box-shadow:0 8px 0 rgba(1,169,77,0.3)}
-.btn-small{font-size:13px;padding:10px 20px}
+.btn-small{font-size:13px;padding:12px 20px;min-height:44px}
 .btn-full{width:100%;max-width:320px}
 .btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
 .btn-confirm-state{background:var(--teal)!important;color:var(--black)!important;animation:pulseBtn 1s ease-in-out infinite}
@@ -75,7 +79,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* word source */
 .word-source-tabs{display:flex;gap:8px;margin-bottom:16px}
-.word-tab{flex:1;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:transparent;color:rgba(255,255,255,0.5);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.word-tab{flex:1;padding:10px;min-height:44px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;background:transparent;color:rgba(255,255,255,0.5);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .word-tab.active{border-color:var(--lime);color:var(--lime);background:rgba(170,249,82,0.08)}
 .custom-inputs{display:none;flex-direction:column;gap:12px}
 .custom-inputs.show{display:flex}
@@ -323,8 +327,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <button class="word-tab" data-src="custom" onclick="setWordSource('custom')">自訂題目</button>
       </div>
       <div id="customInputs" class="custom-inputs">
-        <input type="text" id="customCivilian" placeholder="平民的詞（如：水餃）">
-        <input type="text" id="customSpy" placeholder="臥底的詞（如：鍋貼）">
+        <input type="text" id="customCivilian" placeholder="平民的詞（如：水餃）" autocomplete="off">
+        <input type="text" id="customSpy" placeholder="臥底的詞（如：鍋貼）" autocomplete="off">
         <div class="custom-hint">建議由不參加遊戲的人輸入題目，避免出題者知道答案</div>
       </div>
     </div>
@@ -345,7 +349,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <!-- ===== REVEAL (card flip + nickname) ===== -->
-<div id="screen-reveal" class="screen">
+<div id="screen-reveal" class="screen scrollable">
   <div class="section-label">YOUR WORD</div>
   <div class="flip-scene">
     <div class="flip-card" id="flipCard" onclick="flipToggle()">
@@ -362,7 +366,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div id="revealActions" style="display:none;width:100%;max-width:320px">
     <div class="nickname-wrap">
       <label>輸入暱稱（選填）</label>
-      <input type="text" class="nickname-input" id="nicknameInput" placeholder="例：小明" maxlength="8">
+      <input type="text" class="nickname-input" id="nicknameInput" placeholder="例：小明" maxlength="8" autocomplete="off">
     </div>
     <div class="btn-group" style="margin-top:16px">
       <button class="btn btn-primary btn-full" onclick="confirmSeen()">我記住了</button>
@@ -470,11 +474,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <!-- ===== WHITE GUESS ===== -->
-<div id="screen-white-guess" class="screen">
+<div id="screen-white-guess" class="screen scrollable">
   <div class="section-label" style="color:var(--pink)">MR. WHITE</div>
   <div class="title" style="font-size:clamp(14px,3.5vw,20px);color:var(--pink);margin-bottom:8px">白板被抓到了！</div>
   <p style="color:rgba(255,255,255,0.5);font-size:14px;text-align:center;margin-bottom:24px;line-height:1.8;max-width:300px">最後一次機會——<br>猜出平民的詞就能翻盤！</p>
-  <input type="text" class="guess-input" id="whiteGuessInput" placeholder="輸入你的猜測">
+  <input type="text" class="guess-input" id="whiteGuessInput" placeholder="輸入你的猜測" autocomplete="off">
   <div class="btn-group" style="margin-top:8px">
     <button class="btn btn-primary btn-full" style="background:var(--pink);color:var(--black)" onclick="submitWhiteGuess()">確認猜測</button>
   </div>
@@ -661,6 +665,7 @@ function startGame(){
   for(let i=0;i<G.whites;i++){G.roles[idx[G.spies+i]]='white';G.words[idx[G.spies+i]]='???'}
 
   clearSave();
+  gae('game_start',{players:G.players,spies:G.spies,whites:G.whites,word_source:G.wordSource});
   beginRevealPhase(0);
 }
 
@@ -804,6 +809,7 @@ function resumeTimer(){
 
 /* ===== PEEK ===== */
 function peekWord(){
+  gae('peek_word',{round:G.round});
   pauseTimer();
   const p=G.speakerOrder[G.speakerIdx];
   showScreen('peek');
@@ -847,6 +853,7 @@ function showVoteMethod(){
 
 /* ===== DIGITAL VOTE ===== */
 function startDigitalVote(){
+  gae('vote_method',{method:'digital',round:G.round});
   G.votes={};
   G.voterOrder=G.speakerOrder.slice();
   G.currentVoter=0;
@@ -901,6 +908,7 @@ function confirmVote(){
 
 /* ===== HAND VOTE ===== */
 function startHandVote(){
+  gae('vote_method',{method:'hand',round:G.round});
   showScreen('hand-vote');
   document.getElementById('hvRound').textContent='ROUND '+G.round;
   document.getElementById('hvAlive').textContent='存活：'+aliveCount()+' 人';
@@ -1002,6 +1010,7 @@ function showElimResult(idx){
 }
 
 function showElimUI(idx){
+  gae('eliminated',{role:G.roles[idx],round:G.round});
   document.getElementById('tieMessage').style.display='none';
   const reveal=document.getElementById('eliminationReveal');
   reveal.style.display='block';
@@ -1040,7 +1049,9 @@ function submitWhiteGuess(){
   const guess=document.getElementById('whiteGuessInput').value.trim();
   if(!guess){alert('請輸入你的猜測！');return}
   G.alive[G.pendingElimination]=false;
-  if(guess.toLowerCase()===G.civilianWord.toLowerCase()){showGameOver('white')}
+  const guessCorrect=guess.toLowerCase()===G.civilianWord.toLowerCase();
+  gae('white_guess',{correct:guessCorrect});
+  if(guessCorrect){showGameOver('white')}
   else{
     const w=checkWin();
     if(w){showGameOver(w)}
@@ -1066,6 +1077,7 @@ function checkWin(){
 /* ===== GAME OVER ===== */
 function showGameOver(winner){
   clearSave();
+  gae('game_over',{winner:winner,rounds:G.round,players:G.players,spies:G.spies,whites:G.whites});
   showScreen('gameover');
   const emoji=document.getElementById('winnerEmoji');
   const text=document.getElementById('winnerText');
@@ -1090,6 +1102,7 @@ function showGameOver(winner){
 
 /* ===== RESET ===== */
 function resetGame(){
+  gae('play_again');
   G.round=1;G.pendingElimination=-1;
   G.roles=[];G.words=[];G.alive=[];G.nicknames=[];G.speakerOrder=[];G.votes={};
   clearSave();
@@ -1122,6 +1135,15 @@ try{screen.orientation?.lock?.('portrait').catch(()=>{})}catch(e){}
 
 // Prevent accidental refresh
 window.addEventListener('beforeunload',e=>{if(G.roles.length>0&&G.currentScreen!=='start'&&G.currentScreen!=='gameover'){e.preventDefault();e.returnValue=''}});
+
+// Keyboard detection — hide credit on iOS/Android when keyboard opens
+document.querySelectorAll('input').forEach(inp=>{
+  inp.addEventListener('focus',()=>document.body.classList.add('keyboard-open'));
+  inp.addEventListener('blur',()=>document.body.classList.remove('keyboard-open'));
+});
+
+/* ===== GA4 EVENT TRACKING ===== */
+function gae(name,params){try{gtag('event',name,params||{})}catch(e){}}
 </script>
 </body>
 </html>
