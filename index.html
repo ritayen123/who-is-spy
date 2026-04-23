@@ -90,8 +90,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .flip-card.flipped{transform:rotateY(180deg)}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .flip-front{background:linear-gradient(145deg,#1a1a1a,#111);border:2px solid rgba(255,255,255,0.1)}
-.flip-front .spy-icon{width:80px;height:auto;margin-bottom:16px}
-.flip-front .tap-hint{font-family:var(--font-pixel);font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.1em;margin-top:12px;animation:pulse 2s ease-in-out infinite}
+.flip-front .spy-icon{width:140px;height:auto;margin-bottom:20px}
+.flip-front .tap-hint{font-family:var(--font-pixel);font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:.15em;margin-top:16px;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
 .flip-back{background:linear-gradient(145deg,#1a1a1a,#111);transform:rotateY(180deg);gap:16px;border:2px solid var(--lime)}
 .flip-back.is-white{border-color:var(--pink)}
