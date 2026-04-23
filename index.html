@@ -14,7 +14,8 @@
 <meta name="twitter:title" content="誰是臥底 | fromnineon 韭點開始">
 <meta name="twitter:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
 <!-- Favicon -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>">
+<link rel="icon" href="mascot.png" type="image/png">
+<link rel="apple-touch-icon" href="mascot.png">
 <!-- PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -89,7 +90,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .flip-card.flipped{transform:rotateY(180deg)}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .flip-front{background:linear-gradient(145deg,#1a1a1a,#111);border:2px solid rgba(255,255,255,0.1)}
-.flip-front .spy-icon{font-size:64px;margin-bottom:16px}
+.flip-front .spy-icon{width:80px;height:auto;margin-bottom:16px}
 .flip-front .tap-hint{font-family:var(--font-pixel);font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.1em;margin-top:12px;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
 .flip-back{background:linear-gradient(145deg,#1a1a1a,#111);transform:rotateY(180deg);gap:16px;border:2px solid var(--lime)}
@@ -349,7 +350,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="flip-scene">
     <div class="flip-card" id="flipCard" onclick="flipToggle()">
       <div class="flip-face flip-front">
-        <div class="spy-icon">🕵️</div>
+        <img class="spy-icon" src="mascot.png" alt="">
         <div class="tap-hint">點擊翻牌</div>
       </div>
       <div class="flip-face flip-back" id="flipBack">
@@ -393,7 +394,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="flip-scene">
     <div class="flip-card" id="peekFlip" onclick="peekFlipToggle()">
       <div class="flip-face flip-front">
-        <div class="spy-icon">🔍</div>
+        <img class="spy-icon" src="mascot.png" alt="">
         <div class="tap-hint">點擊偷看</div>
       </div>
       <div class="flip-face flip-back" id="peekBack">
@@ -1069,7 +1070,7 @@ function showGameOver(winner){
   const emoji=document.getElementById('winnerEmoji');
   const text=document.getElementById('winnerText');
   if(winner==='civilian'){emoji.textContent='🎉';text.innerHTML='<span class="winner-civilian">平民陣營獲勝！</span>'}
-  else if(winner==='spy'){emoji.textContent='🕵️';text.innerHTML='<span class="winner-spy">臥底陣營獲勝！</span>'}
+  else if(winner==='spy'){emoji.innerHTML='<img src="mascot.png" style="width:48px;height:auto">';text.innerHTML='<span class="winner-spy">臥底陣營獲勝！</span>'}
   else{emoji.textContent='🃏';text.innerHTML='<span class="winner-white">白板逆轉獲勝！</span>'}
 
   vibrate([100,50,100,50,200]);
@@ -1111,7 +1112,7 @@ if(saved&&saved.roles&&saved.roles.length>0&&saved.currentScreen!=='start'&&save
 // PWA manifest
 try{
   const m={name:'誰是臥底',short_name:'臥底',start_url:'.',display:'standalone',background_color:'#0A0A0A',theme_color:'#0A0A0A',
-    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>",sizes:'any',type:'image/svg+xml'}]};
+    icons:[{src:'mascot.png',sizes:'192x192',type:'image/png'}]};
   const b=new Blob([JSON.stringify(m)],{type:'application/json'});
   document.getElementById('pwa-manifest').href=URL.createObjectURL(b);
 }catch(e){}
