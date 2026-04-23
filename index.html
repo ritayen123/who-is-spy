@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>誰是臥底 | 韭點開始 fromnineon</title>
+<meta name="description" content="誰是臥底線上派對遊戲，一支手機就能玩！由韭點開始 fromnineon 製作。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: #0A0A0A;
+  color: #fff;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(170,249,82,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(170,249,82,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== VARIABLES ===== */
+:root {
+  --lime: #AAF952;
+  --teal: #84D2DD;
+  --green: #01A94D;
+  --pink: #F1B9E1;
+  --black: #0A0A0A;
+  --white: #FFFFFF;
+  --card-bg: rgba(255,255,255,0.06);
+  --card-border: rgba(255,255,255,0.1);
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-body: 'Noto Sans TC', sans-serif;
+}
+
+/* ===== LAYOUT ===== */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px 20px;
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.4s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== TYPOGRAPHY ===== */
+.pixel { font-family: var(--font-pixel); }
+.title {
+  font-family: var(--font-pixel);
+  font-size: clamp(18px, 5vw, 32px);
+  color: var(--lime);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(170,249,82,0.3);
+}
+.subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  margin-bottom: 32px;
+}
+.section-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--teal);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  padding: 14px 32px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.btn-primary {
+  background: var(--lime);
+  color: var(--black);
+}
+.btn-primary:hover, .btn-primary:active {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 rgba(170,249,82,0.3);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.btn-secondary:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.btn-danger {
+  background: #ff4757;
+  color: #fff;
+}
+.btn-dark {
+  background: var(--green);
+  color: #fff;
+}
+.btn-dark:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 rgba(1,169,77,0.3);
+}
+.btn-small {
+  font-size: 13px;
+  padding: 10px 20px;
+}
+.btn-full {
+  width: 100%;
+  max-width: 320px;
+}
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== CARD ===== */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ===== SETUP CONTROLS ===== */
+.setup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.setup-row:last-child { border-bottom: none; }
+.setup-label {
+  font-weight: 700;
+  font-size: 15px;
+}
+.setup-label small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.stepper-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.stepper-btn:hover { border-color: var(--lime); color: var(--lime); }
+.stepper-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.stepper-val {
+  font-family: var(--font-pixel);
+  font-size: 20px;
+  color: var(--lime);
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Toggle */
+.toggle-wrap {
+  position: relative;
+  width: 52px;
+  height: 28px;
+}
+.toggle-wrap input { display: none; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-track {
+  background: var(--lime);
+}
+.toggle-wrap input:checked + .toggle-track::after {
+  transform: translateX(24px);
+}
+.toggle-wrap input:disabled + .toggle-track {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Word source */
+.word-source-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.word-tab {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.word-tab.active {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(170,249,82,0.08);
+}
+.custom-inputs {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.custom-inputs.show { display: flex; }
+.custom-inputs input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.custom-inputs input:focus { border-color: var(--lime); }
+.custom-inputs input::placeholder { color: rgba(255,255,255,0.25); }
+
+/* ===== FLIP CARD ===== */
+.flip-scene {
+  perspective: 800px;
+  width: 260px;
+  height: 380px;
+  margin: 24px auto;
+}
+.flip-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.flip-card.flipped { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.flip-front {
+  background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
+  border: 2px solid rgba(255,255,255,0.1);
+}
+.flip-front .spy-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: grayscale(0.3);
+}
+.flip-front .tap-hint {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  margin-top: 12px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+.flip-back {
+  background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
+  border: 2px solid var(--lime);
+  transform: rotateY(180deg);
+  gap: 16px;
+}
+.flip-back .role-badge {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  padding: 6px 16px;
+  border-radius: 3px;
+  letter-spacing: 0.1em;
+}
+.role-civilian .role-badge { background: var(--green); color: #fff; }
+.role-spy .role-badge { background: var(--teal); color: var(--black); }
+.role-white .role-badge { background: var(--pink); color: var(--black); }
+.flip-back .word-display {
+  font-size: 32px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.4;
+}
+.role-civilian .word-display { color: var(--lime); }
+.role-spy .word-display { color: var(--teal); }
+.role-white .word-display { color: var(--pink); }
+
+/* ===== PLAYER PASS SCREEN ===== */
+.pass-msg {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.pass-player {
+  font-family: var(--font-pixel);
+  font-size: clamp(24px, 6vw, 36px);
+  color: var(--lime);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* ===== ROUND INFO ===== */
+.round-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 3px;
+  margin-bottom: 24px;
+}
+.round-bar .round-num {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--lime);
+}
+.round-bar .alive-count {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== TIMER ===== */
+.timer {
+  font-family: var(--font-pixel);
+  font-size: 28px;
+  color: var(--lime);
+  margin: 16px 0;
+}
+.timer.warning { color: #ff4757; animation: pulse 0.5s ease-in-out infinite; }
+
+/* ===== DESCRIBE SCREEN ===== */
+.current-speaker {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+}
+.speaker-name {
+  font-family: var(--font-pixel);
+  font-size: clamp(20px, 5vw, 28px);
+  color: var(--lime);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* ===== VOTE GRID ===== */
+.vote-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 16px 0 24px;
+}
+.vote-card {
+  aspect-ratio: 1;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--card-bg);
+  gap: 6px;
+}
+.vote-card:hover:not(.disabled):not(.selected) {
+  border-color: var(--teal);
+  transform: translateY(-3px);
+}
+.vote-card.selected {
+  border-color: var(--lime);
+  background: rgba(170,249,82,0.12);
+  box-shadow: 0 0 16px rgba(170,249,82,0.15);
+}
+.vote-card.disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+.vote-card .player-num {
+  font-family: var(--font-pixel);
+  font-size: 18px;
+  color: var(--lime);
+}
+.vote-card .player-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+.vote-card.eliminated {
+  opacity: 0.15;
+  pointer-events: none;
+  text-decoration: line-through;
+}
+
+/* ===== VOTE RESULT ===== */
+.result-list {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0 24px;
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 3px;
+}
+.result-row.top-vote {
+  border-color: #ff4757;
+  background: rgba(255,71,87,0.1);
+}
+.result-row .r-name {
+  font-weight: 700;
+  flex: 1;
+}
+.result-bar-wrap {
+  flex: 2;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.result-bar {
+  height: 100%;
+  background: var(--lime);
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.result-row.top-vote .result-bar { background: #ff4757; }
+.result-row .r-votes {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: var(--lime);
+  min-width: 24px;
+  text-align: right;
+}
+.result-row.top-vote .r-votes { color: #ff4757; }
+
+/* ===== ELIMINATION ===== */
+.eliminated-reveal {
+  text-align: center;
+  margin: 16px 0;
+}
+.eliminated-player {
+  font-family: var(--font-pixel);
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.eliminated-role {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 24px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.eliminated-word {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== MR WHITE GUESS ===== */
+.guess-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px 18px;
+  border: 2px solid var(--pink);
+  border-radius: 3px;
+  background: rgba(241,185,225,0.08);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  margin: 16px 0;
+}
+.guess-input:focus { box-shadow: 0 0 16px rgba(241,185,225,0.2); }
+
+/* ===== GAME OVER ===== */
+.winner-text {
+  font-family: var(--font-pixel);
+  font-size: clamp(16px, 4vw, 24px);
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
+.winner-civilian { color: var(--lime); }
+.winner-spy { color: var(--teal); }
+.winner-white { color: var(--pink); }
+
+.reveal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 32px;
+}
+.reveal-card {
+  padding: 14px 8px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+.reveal-card .rv-num {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.reveal-card .rv-role {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.reveal-card .rv-word {
+  font-size: 14px;
+  font-weight: 900;
+}
+.reveal-card.rc-civilian { border-color: rgba(1,169,77,0.4); }
+.reveal-card.rc-civilian .rv-role { background: var(--green); }
+.reveal-card.rc-civilian .rv-word { color: var(--lime); }
+.reveal-card.rc-spy { border-color: rgba(132,210,221,0.4); }
+.reveal-card.rc-spy .rv-role { background: var(--teal); color: var(--black); }
+.reveal-card.rc-spy .rv-word { color: var(--teal); }
+.reveal-card.rc-white { border-color: rgba(241,185,225,0.4); }
+.reveal-card.rc-white .rv-role { background: var(--pink); color: var(--black); }
+.reveal-card.rc-white .rv-word { color: var(--pink); }
+
+/* ===== FOOTER ===== */
+.credit {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  z-index: 1;
+  pointer-events: none;
+}
+.credit a {
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+/* ===== BUTTON GROUP ===== */
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  align-items: center;
+}
+
+/* ===== TOAST / TIE MSG ===== */
+.tie-msg {
+  text-align: center;
+  padding: 16px 24px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  margin: 16px 0 24px;
+  max-width: 400px;
+}
+.tie-msg .tie-icon { font-size: 32px; margin-bottom: 8px; }
+.tie-msg p { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+/* ===== MEDIA ===== */
+@media (max-width: 380px) {
+  .flip-scene { width: 220px; height: 320px; }
+  .vote-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .reveal-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== SCREEN 1: START ==================== -->
+<div id="screen-start" class="screen active">
+  <div style="margin-bottom: 48px; text-align: center;">
+    <div class="title" style="margin-bottom: 16px; line-height: 2;">誰是臥底</div>
+    <div style="font-family: var(--font-pixel); font-size: 9px; color: var(--teal); letter-spacing: 0.15em; margin-bottom: 24px;">WHO IS THE SPY</div>
+    <div style="font-size: 48px; margin-bottom: 24px;">🕵️</div>
+    <p style="color: rgba(255,255,255,0.4); font-size: 14px; max-width: 280px; margin: 0 auto; line-height: 1.8;">
+      一支手機，輪流傳閱<br>找出混在人群中的臥底！
+    </p>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="showScreen('setup')">開始遊戲</button>
+</div>
+
+<!-- ==================== SCREEN 2: SETUP ==================== -->
+<div id="screen-setup" class="screen">
+  <div class="section-label">GAME SETUP</div>
+  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); margin-bottom: 24px;">遊戲設定</div>
+
+  <div class="card">
+    <!-- Player count -->
+    <div class="setup-row">
+      <div class="setup-label">玩家人數</div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustPlayers(-1)">−</button>
+        <span id="playerCount" class="stepper-val">6</span>
+        <button class="stepper-btn" onclick="adjustPlayers(1)">+</button>
+      </div>
+    </div>
+
+    <!-- Spy count -->
+    <div class="setup-row">
+      <div class="setup-label">
+        臥底人數
+        <small id="spySuggestion">建議：2 人</small>
+      </div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustSpies(-1)">−</button>
+        <span id="spyCount" class="stepper-val">2</span>
+        <button class="stepper-btn" onclick="adjustSpies(1)">+</button>
+      </div>
+    </div>
+
+    <!-- Mr. White toggle -->
+    <div class="setup-row">
+      <div class="setup-label">
+        白板
+        <small id="whiteHint">沒有題目，靠瞎掰</small>
+      </div>
+      <div class="toggle-wrap">
+        <input type="checkbox" id="whiteToggle" onchange="updateWhiteToggle()">
+        <label class="toggle-track" for="whiteToggle"></label>
+      </div>
+    </div>
+
+    <!-- Word source -->
+    <div class="setup-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+      <div class="setup-label">題目來源</div>
+      <div class="word-source-tabs">
+        <button class="word-tab active" data-src="random" onclick="setWordSource('random')">隨機題庫</button>
+        <button class="word-tab" data-src="custom" onclick="setWordSource('custom')">自訂題目</button>
+      </div>
+      <div id="customInputs" class="custom-inputs">
+        <input type="text" id="customCivilian" placeholder="平民的詞（如：水餃）">
+        <input type="text" id="customSpy" placeholder="臥底的詞（如：鍋貼）">
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-group" style="margin-top: 24px;">
+    <button class="btn btn-primary btn-full" onclick="startGame()">確認開始</button>
+    <button class="btn btn-secondary btn-small" onclick="showScreen('start')">返回</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 3: PASS PHONE ==================== -->
+<div id="screen-pass" class="screen">
+  <div class="section-label">PASS THE PHONE</div>
+  <div class="pass-msg">請將手機交給</div>
+  <div id="passPlayer" class="pass-player">玩家 1</div>
+
+  <div class="flip-scene" id="flipScene">
+    <div class="flip-card" id="flipCard" onclick="flipCardToggle()">
+      <div class="flip-face flip-front">
+        <div class="spy-icon">🕵️</div>
+        <div class="tap-hint">CLICK TO REVEAL</div>
+      </div>
+      <div class="flip-face flip-back" id="flipBack">
+        <span class="role-badge" id="roleBadge">平民</span>
+        <span class="word-display" id="wordDisplay">水餃</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="passActions" class="btn-group" style="display: none;">
+    <button class="btn btn-primary btn-full" onclick="confirmSeen()">我記住了</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 4: DESCRIBE ==================== -->
+<div id="screen-describe" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="roundNum">ROUND 1</span>
+    <span class="alive-count" id="aliveCount">存活：6 人</span>
+  </div>
+
+  <div class="current-speaker">輪到描述</div>
+  <div id="speakerName" class="speaker-name">玩家 1</div>
+
+  <div class="timer" id="timer">60</div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" onclick="nextSpeaker()">描述完畢</button>
+    <button class="btn btn-secondary btn-small" onclick="peekWord()">忘記題目</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 3B: PEEK WORD (reuse pass screen logic) ==================== -->
+<div id="screen-peek" class="screen">
+  <div class="section-label">PEEK WORD</div>
+  <div class="pass-msg">確認是本人嗎？</div>
+  <div id="peekPlayer" class="pass-player">玩家 1</div>
+
+  <div class="flip-scene">
+    <div class="flip-card" id="peekFlipCard" onclick="peekFlipToggle()">
+      <div class="flip-face flip-front">
+        <div class="spy-icon">🔍</div>
+        <div class="tap-hint">CLICK TO PEEK</div>
+      </div>
+      <div class="flip-face flip-back" id="peekFlipBack">
+        <span class="role-badge" id="peekRoleBadge">平民</span>
+        <span class="word-display" id="peekWordDisplay">水餃</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="peekActions" class="btn-group" style="display: none;">
+    <button class="btn btn-primary btn-full" onclick="closePeek()">看完了</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 5: VOTE ==================== -->
+<div id="screen-vote" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="voteRoundNum">ROUND 1</span>
+    <span class="alive-count" id="voteAliveCount">存活：6 人</span>
+  </div>
+
+  <div class="section-label">VOTE</div>
+  <div id="voterPrompt" class="pass-msg" style="margin-bottom: 4px;">玩家 1 請投票</div>
+  <div style="font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 16px;">選出你認為的臥底</div>
+
+  <div id="voteGrid" class="vote-grid"></div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" id="confirmVoteBtn" onclick="confirmVote()" disabled>確認投票</button>
+    <div style="font-size: 12px; color: rgba(255,255,255,0.25); text-align: center;">投完請將手機交給下一位</div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 6: VOTE RESULT ==================== -->
+<div id="screen-result" class="screen">
+  <div class="section-label">RESULT</div>
+  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); margin-bottom: 16px;">投票結果</div>
+
+  <div id="resultList" class="result-list"></div>
+
+  <!-- tie -->
+  <div id="tieMessage" class="tie-msg" style="display: none;">
+    <div class="tie-icon">⚖️</div>
+    <p>平票！本輪無人淘汰</p>
+  </div>
+
+  <!-- elimination reveal -->
+  <div id="eliminationReveal" class="eliminated-reveal" style="display: none;">
+    <div id="elimPlayer" class="eliminated-player"></div>
+    <div id="elimRole" class="eliminated-role"></div>
+    <div id="elimWord" class="eliminated-word"></div>
+  </div>
+
+  <div class="btn-group" style="margin-top: 8px;">
+    <button class="btn btn-primary btn-full" id="resultNextBtn" onclick="afterVoteResult()">繼續遊戲</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 6.5: MR WHITE GUESS ==================== -->
+<div id="screen-white-guess" class="screen">
+  <div class="section-label" style="color: var(--pink);">MR. WHITE</div>
+  <div class="title" style="font-size: clamp(14px, 3.5vw, 20px); color: var(--pink); margin-bottom: 8px;">白板被抓到了！</div>
+  <p style="color: rgba(255,255,255,0.5); font-size: 14px; text-align: center; margin-bottom: 24px; line-height: 1.8; max-width: 300px;">
+    最後一次機會——<br>猜出平民的詞就能翻盤！
+  </p>
+
+  <input type="text" class="guess-input" id="whiteGuessInput" placeholder="輸入你的猜測">
+
+  <div class="btn-group" style="margin-top: 8px;">
+    <button class="btn btn-primary btn-full" style="background: var(--pink); color: var(--black);" onclick="submitWhiteGuess()">確認猜測</button>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 7: GAME OVER ==================== -->
+<div id="screen-gameover" class="screen">
+  <div class="section-label">GAME OVER</div>
+  <div style="font-size: 48px; margin-bottom: 16px;" id="winnerEmoji">🎉</div>
+  <div id="winnerText" class="winner-text"></div>
+
+  <div id="revealGrid" class="reveal-grid"></div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" onclick="resetGame()">再玩一局</button>
+    <button class="btn btn-secondary btn-small" onclick="showScreen('start')">回首頁</button>
+  </div>
+</div>
+
+<!-- CREDIT -->
+<div class="credit">
+  Made by <a href="https://www.fromnineon.com" target="_blank">fromnineon 韭點開始</a>
+</div>
+
+<script>
+/* ===== WORD BANK ===== */
+const WORD_BANK = [
+  ['水餃', '鍋貼'],
+  ['珍珠奶茶', '波霸奶茶'],
+  ['蝙蝠俠', '蜘蛛人'],
+  ['iPhone', 'Samsung'],
+  ['火鍋', '麻辣燙'],
+  ['牛排', '豬排'],
+  ['麥當勞', '肯德基'],
+  ['Uber', 'Lyft'],
+  ['咖啡', '拿鐵'],
+  ['日本', '韓國'],
+  ['鋼琴', '吉他'],
+  ['游泳', '潛水'],
+  ['貓', '狗'],
+  ['雞蛋', '鴨蛋'],
+  ['籃球', '排球'],
+  ['計程車', '公車'],
+  ['蛋糕', '麵包'],
+  ['微波爐', '烤箱'],
+  ['口紅', '唇蜜'],
+  ['皮鞋', '拖鞋'],
+  ['沙發', '椅子'],
+  ['冰箱', '冷凍庫'],
+  ['Netflix', 'YouTube'],
+  ['Facebook', 'Instagram'],
+  ['醫生', '護士'],
+  ['老師', '教授'],
+  ['高鐵', '火車'],
+  ['地震', '颱風'],
+  ['聖誕節', '跨年'],
+  ['海邊', '游泳池'],
+  ['巧克力', '可可'],
+  ['滷肉飯', '雞肉飯'],
+  ['豆漿', '牛奶'],
+  ['雨傘', '雨衣'],
+  ['漫畫', '動畫'],
+  ['戒指', '手環'],
+  ['行李箱', '背包'],
+  ['WiFi', '藍牙'],
+  ['冰淇淋', '雪糕'],
+  ['眼鏡', '墨鏡'],
+  ['枕頭', '抱枕'],
+  ['番茄醬', '辣椒醬'],
+  ['手錶', '時鐘'],
+  ['腳踏車', '機車'],
+];
+
+/* ===== GAME STATE ===== */
+let G = {
+  players: 6,
+  spies: 2,
+  hasWhite: false,
+  wordSource: 'random',
+  civilianWord: '',
+  spyWord: '',
+  roles: [],        // ['civilian','spy','white',...]
+  words: [],         // actual word each player has
+  alive: [],         // boolean array
+  currentReveal: 0,  // which player is revealing
+  round: 1,
+  speakerOrder: [],
+  speakerIdx: 0,
+  votes: [],         // votes[voterIdx] = votedForIdx
+  currentVoter: 0,
+  voterOrder: [],
+  selectedVote: -1,
+  timerInterval: null,
+  timerSeconds: 60,
+  pendingElimination: -1,
+};
+
+/* ===== SCREEN NAV ===== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  clearTimer();
+}
+
+/* ===== SETUP ===== */
+function suggestSpies(n) {
+  if (n <= 5) return 1;
+  if (n <= 8) return 2;
+  return 3;
+}
+
+function adjustPlayers(d) {
+  G.players = Math.max(4, Math.min(10, G.players + d));
+  document.getElementById('playerCount').textContent = G.players;
+  const sug = suggestSpies(G.players);
+  G.spies = Math.min(G.spies, G.players - 2);
+  G.spies = Math.max(1, G.spies);
+  document.getElementById('spyCount').textContent = G.spies;
+  document.getElementById('spySuggestion').textContent = '建議：' + sug + ' 人';
+  updateWhiteAvailability();
+}
+
+function adjustSpies(d) {
+  const maxSpies = Math.floor((G.players - (G.hasWhite ? 1 : 0)) / 2);
+  G.spies = Math.max(1, Math.min(maxSpies, G.spies + d));
+  document.getElementById('spyCount').textContent = G.spies;
+}
+
+function updateWhiteAvailability() {
+  const toggle = document.getElementById('whiteToggle');
+  const hint = document.getElementById('whiteHint');
+  if (G.players < 6) {
+    toggle.checked = false;
+    toggle.disabled = true;
+    G.hasWhite = false;
+    hint.textContent = '需 6 人以上';
+  } else {
+    toggle.disabled = false;
+    hint.textContent = '沒有題目，靠瞎掰';
+  }
+}
+
+function updateWhiteToggle() {
+  G.hasWhite = document.getElementById('whiteToggle').checked;
+  adjustSpies(0); // re-clamp
+}
+
+function setWordSource(src) {
+  G.wordSource = src;
+  document.querySelectorAll('.word-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.src === src);
+  });
+  document.getElementById('customInputs').classList.toggle('show', src === 'custom');
+}
+
+/* ===== START GAME ===== */
+function startGame() {
+  // Pick words
+  if (G.wordSource === 'custom') {
+    G.civilianWord = document.getElementById('customCivilian').value.trim();
+    G.spyWord = document.getElementById('customSpy').value.trim();
+    if (!G.civilianWord || !G.spyWord) {
+      alert('請輸入平民和臥底的題目！');
+      return;
+    }
+  } else {
+    const pair = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+    // Randomly swap which word goes to civilian vs spy
+    if (Math.random() < 0.5) {
+      G.civilianWord = pair[0];
+      G.spyWord = pair[1];
+    } else {
+      G.civilianWord = pair[1];
+      G.spyWord = pair[0];
+    }
+  }
+
+  // Assign roles
+  G.roles = new Array(G.players).fill('civilian');
+  G.words = new Array(G.players).fill(G.civilianWord);
+  G.alive = new Array(G.players).fill(true);
+
+  // Randomly assign spy indices
+  const indices = Array.from({length: G.players}, (_, i) => i);
+  shuffle(indices);
+  for (let i = 0; i < G.spies; i++) {
+    G.roles[indices[i]] = 'spy';
+    G.words[indices[i]] = G.spyWord;
+  }
+  if (G.hasWhite) {
+    G.roles[indices[G.spies]] = 'white';
+    G.words[indices[G.spies]] = '???';
+  }
+
+  G.round = 1;
+  G.currentReveal = 0;
+
+  // Start word reveal
+  showPassScreen(0);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+/* ===== WORD REVEAL (PASS & PLAY) ===== */
+function showPassScreen(idx) {
+  G.currentReveal = idx;
+  showScreen('pass');
+  document.getElementById('passPlayer').textContent = '玩家 ' + (idx + 1);
+
+  // Reset flip
+  const card = document.getElementById('flipCard');
+  card.classList.remove('flipped');
+  document.getElementById('passActions').style.display = 'none';
+
+  // Set back content
+  const role = G.roles[idx];
+  const word = G.words[idx];
+  const back = document.getElementById('flipBack');
+  back.parentElement.className = 'flip-card role-' + (role === 'white' ? 'white' : role === 'spy' ? 'spy' : 'civilian');
+
+  document.getElementById('roleBadge').textContent =
+    role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
+  document.getElementById('wordDisplay').textContent = word;
+}
+
+function flipCardToggle() {
+  const card = document.getElementById('flipCard');
+  if (!card.classList.contains('flipped')) {
+    card.classList.add('flipped');
+    document.getElementById('passActions').style.display = 'flex';
+  }
+}
+
+function confirmSeen() {
+  const next = G.currentReveal + 1;
+  if (next < G.players) {
+    showPassScreen(next);
+  } else {
+    startDescribePhase();
+  }
+}
+
+/* ===== DESCRIBE PHASE ===== */
+function startDescribePhase() {
+  // Build speaker order (alive players, shuffled on round 1)
+  G.speakerOrder = [];
+  for (let i = 0; i < G.players; i++) {
+    if (G.alive[i]) G.speakerOrder.push(i);
+  }
+  if (G.round === 1) shuffle(G.speakerOrder);
+  G.speakerIdx = 0;
+  showDescribeScreen();
+}
+
+function showDescribeScreen() {
+  showScreen('describe');
+  const pIdx = G.speakerOrder[G.speakerIdx];
+  document.getElementById('roundNum').textContent = 'ROUND ' + G.round;
+  document.getElementById('aliveCount').textContent = '存活：' + G.alive.filter(Boolean).length + ' 人';
+  document.getElementById('speakerName').textContent = '玩家 ' + (pIdx + 1);
+  startTimer();
+}
+
+function nextSpeaker() {
+  G.speakerIdx++;
+  if (G.speakerIdx >= G.speakerOrder.length) {
+    startVotePhase();
+  } else {
+    showDescribeScreen();
+  }
+}
+
+/* ===== PEEK WORD ===== */
+function peekWord() {
+  const pIdx = G.speakerOrder[G.speakerIdx];
+  showScreen('peek');
+  document.getElementById('peekPlayer').textContent = '玩家 ' + (pIdx + 1);
+
+  const card = document.getElementById('peekFlipCard');
+  card.classList.remove('flipped');
+  document.getElementById('peekActions').style.display = 'none';
+
+  const role = G.roles[pIdx];
+  const word = G.words[pIdx];
+  card.className = 'flip-card role-' + (role === 'white' ? 'white' : role === 'spy' ? 'spy' : 'civilian');
+
+  document.getElementById('peekRoleBadge').textContent =
+    role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
+  document.getElementById('peekWordDisplay').textContent = word;
+}
+
+function peekFlipToggle() {
+  const card = document.getElementById('peekFlipCard');
+  if (!card.classList.contains('flipped')) {
+    card.classList.add('flipped');
+    document.getElementById('peekActions').style.display = 'flex';
+  }
+}
+
+function closePeek() {
+  showDescribeScreen();
+}
+
+/* ===== TIMER ===== */
+function startTimer() {
+  clearTimer();
+  G.timerSeconds = 60;
+  const el = document.getElementById('timer');
+  el.textContent = G.timerSeconds;
+  el.classList.remove('warning');
+  G.timerInterval = setInterval(() => {
+    G.timerSeconds--;
+    el.textContent = G.timerSeconds;
+    if (G.timerSeconds <= 10) el.classList.add('warning');
+    if (G.timerSeconds <= 0) {
+      clearTimer();
+      nextSpeaker();
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (G.timerInterval) {
+    clearInterval(G.timerInterval);
+    G.timerInterval = null;
+  }
+}
+
+/* ===== VOTE PHASE ===== */
+function startVotePhase() {
+  G.votes = {};
+  G.voterOrder = G.speakerOrder.slice(); // same order
+  G.currentVoter = 0;
+  G.selectedVote = -1;
+  showVoteScreen();
+}
+
+function showVoteScreen() {
+  showScreen('vote');
+  const voterIdx = G.voterOrder[G.currentVoter];
+  document.getElementById('voteRoundNum').textContent = 'ROUND ' + G.round;
+  document.getElementById('voteAliveCount').textContent = '存活：' + G.alive.filter(Boolean).length + ' 人';
+  document.getElementById('voterPrompt').textContent = '玩家 ' + (voterIdx + 1) + ' 請投票';
+  G.selectedVote = -1;
+  document.getElementById('confirmVoteBtn').disabled = true;
+
+  // Build vote grid
+  const grid = document.getElementById('voteGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < G.players; i++) {
+    const card = document.createElement('div');
+    card.className = 'vote-card';
+    if (!G.alive[i]) {
+      card.classList.add('eliminated');
+    } else if (i === voterIdx) {
+      card.classList.add('disabled');
+    }
+    card.innerHTML = `
+      <span class="player-num">${i + 1}</span>
+      <span class="player-label">玩家</span>
+    `;
+    if (G.alive[i] && i !== voterIdx) {
+      card.addEventListener('click', () => selectVote(i, card));
+    }
+    grid.appendChild(card);
+  }
+}
+
+function selectVote(targetIdx, cardEl) {
+  G.selectedVote = targetIdx;
+  document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  document.getElementById('confirmVoteBtn').disabled = false;
+}
+
+function confirmVote() {
+  if (G.selectedVote < 0) return;
+  const voterIdx = G.voterOrder[G.currentVoter];
+  G.votes[voterIdx] = G.selectedVote;
+  G.currentVoter++;
+
+  if (G.currentVoter < G.voterOrder.length) {
+    showVoteScreen();
+  } else {
+    showVoteResult();
+  }
+}
+
+/* ===== VOTE RESULT ===== */
+function showVoteResult() {
+  showScreen('result');
+
+  // Tally
+  const tally = {};
+  for (const voter in G.votes) {
+    const target = G.votes[voter];
+    tally[target] = (tally[target] || 0) + 1;
+  }
+
+  // Sort by votes desc
+  const sorted = Object.entries(tally)
+    .map(([idx, count]) => ({idx: parseInt(idx), count}))
+    .sort((a, b) => b.count - a.count);
+
+  const maxVotes = sorted[0]?.count || 0;
+  const topPlayers = sorted.filter(s => s.count === maxVotes);
+  const isTie = topPlayers.length > 1;
+
+  // Render result list
+  const list = document.getElementById('resultList');
+  list.innerHTML = '';
+  sorted.forEach(({idx, count}) => {
+    const row = document.createElement('div');
+    row.className = 'result-row';
+    if (count === maxVotes) row.classList.add('top-vote');
+    const pct = (count / G.voterOrder.length) * 100;
+    row.innerHTML = `
+      <span class="r-name">玩家 ${idx + 1}</span>
+      <div class="result-bar-wrap"><div class="result-bar" style="width: 0%"></div></div>
+      <span class="r-votes">${count}</span>
+    `;
+    list.appendChild(row);
+    // Animate bar
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        row.querySelector('.result-bar').style.width = pct + '%';
+      });
+    });
+  });
+
+  const tieMsg = document.getElementById('tieMessage');
+  const elimReveal = document.getElementById('eliminationReveal');
+  const nextBtn = document.getElementById('resultNextBtn');
+
+  if (isTie) {
+    tieMsg.style.display = 'block';
+    elimReveal.style.display = 'none';
+    G.pendingElimination = -1;
+    nextBtn.textContent = '進入下一輪';
+  } else {
+    tieMsg.style.display = 'none';
+    elimReveal.style.display = 'block';
+    const elimIdx = topPlayers[0].idx;
+    G.pendingElimination = elimIdx;
+
+    const role = G.roles[elimIdx];
+    document.getElementById('elimPlayer').textContent = '玩家 ' + (elimIdx + 1);
+    document.getElementById('elimPlayer').style.color =
+      role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--lime)';
+
+    const roleEl = document.getElementById('elimRole');
+    roleEl.textContent = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
+    roleEl.style.background = role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--green)';
+    roleEl.style.color = role === 'civilian' ? '#fff' : 'var(--black)';
+
+    document.getElementById('elimWord').textContent = '題目：' + G.words[elimIdx];
+
+    // Check if white was eliminated
+    if (role === 'white') {
+      nextBtn.textContent = '白板猜詞';
+    } else {
+      nextBtn.textContent = '繼續遊戲';
+    }
+  }
+}
+
+function afterVoteResult() {
+  if (G.pendingElimination >= 0) {
+    const role = G.roles[G.pendingElimination];
+    if (role === 'white') {
+      // Mr. White gets to guess
+      showScreen('white-guess');
+      document.getElementById('whiteGuessInput').value = '';
+      document.getElementById('whiteGuessInput').focus();
+      return;
+    }
+    // Eliminate
+    G.alive[G.pendingElimination] = false;
+
+    // Check win condition
+    const result = checkWin();
+    if (result) {
+      showGameOver(result);
+      return;
+    }
+  }
+
+  // Next round
+  G.round++;
+  startDescribePhase();
+}
+
+/* ===== MR. WHITE GUESS ===== */
+function submitWhiteGuess() {
+  const guess = document.getElementById('whiteGuessInput').value.trim();
+  if (!guess) {
+    alert('請輸入你的猜測！');
+    return;
+  }
+
+  G.alive[G.pendingElimination] = false;
+
+  if (guess === G.civilianWord) {
+    showGameOver('white');
+  } else {
+    const result = checkWin();
+    if (result) {
+      showGameOver(result);
+    } else {
+      G.round++;
+      startDescribePhase();
+    }
+  }
+}
+
+/* ===== WIN CHECK ===== */
+function checkWin() {
+  let aliveCivilians = 0;
+  let aliveSpies = 0;
+  let aliveWhite = 0;
+
+  for (let i = 0; i < G.players; i++) {
+    if (!G.alive[i]) continue;
+    if (G.roles[i] === 'civilian') aliveCivilians++;
+    else if (G.roles[i] === 'spy') aliveSpies++;
+    else if (G.roles[i] === 'white') aliveWhite++;
+  }
+
+  const totalAlive = aliveCivilians + aliveSpies + aliveWhite;
+
+  // All spies eliminated (and white eliminated) = civilian wins
+  if (aliveSpies === 0 && aliveWhite === 0) return 'civilian';
+
+  // Spies win: when remaining players <= 3 and spy still alive
+  // More precisely: civilians can no longer outvote spies
+  if (totalAlive <= 3 && aliveSpies > 0) return 'spy';
+
+  // Edge case: spies >= civilians
+  if (aliveSpies >= aliveCivilians + aliveWhite) return 'spy';
+
+  return null;
+}
+
+/* ===== GAME OVER ===== */
+function showGameOver(winner) {
+  showScreen('gameover');
+
+  const emoji = document.getElementById('winnerEmoji');
+  const text = document.getElementById('winnerText');
+
+  if (winner === 'civilian') {
+    emoji.textContent = '🎉';
+    text.innerHTML = '<span class="winner-civilian">平民陣營獲勝！</span>';
+  } else if (winner === 'spy') {
+    emoji.textContent = '🕵️';
+    text.innerHTML = '<span class="winner-spy">臥底陣營獲勝！</span>';
+  } else if (winner === 'white') {
+    emoji.textContent = '🃏';
+    text.innerHTML = '<span class="winner-white">白板逆轉獲勝！</span>';
+  }
+
+  // Reveal all
+  const grid = document.getElementById('revealGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < G.players; i++) {
+    const role = G.roles[i];
+    const cls = role === 'spy' ? 'rc-spy' : role === 'white' ? 'rc-white' : 'rc-civilian';
+    const roleName = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
+    const card = document.createElement('div');
+    card.className = 'reveal-card ' + cls;
+    card.innerHTML = `
+      <div class="rv-num">P${i + 1}</div>
+      <div class="rv-role">${roleName}</div>
+      <div class="rv-word">${G.words[i]}</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+/* ===== RESET ===== */
+function resetGame() {
+  G.round = 1;
+  G.pendingElimination = -1;
+  showScreen('setup');
+}
+
+/* ===== INIT ===== */
+updateWhiteAvailability();
+</script>
+</body>
+</html>
