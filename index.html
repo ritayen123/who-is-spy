@@ -43,6 +43,7 @@ if(_ref){history.replaceState(null,'',location.pathname)}
 html{font-size:16px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 body{font-family:'Noto Sans TC',sans-serif;background:#0A0A0A;color:#fff;min-height:100dvh;overflow-x:hidden;position:relative;padding-bottom:env(safe-area-inset-bottom,0)}
 body.keyboard-open .credit{display:none}
+body.in-game .credit{display:none}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(170,249,82,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(170,249,82,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
 :root{--lime:#AAF952;--teal:#84D2DD;--green:#01A94D;--pink:#F1B9E1;--black:#0A0A0A;--white:#FFF;--card-bg:rgba(255,255,255,0.06);--card-border:rgba(255,255,255,0.1);--font-pixel:'Press Start 2P',monospace;--font-body:'Noto Sans TC',sans-serif}
 
@@ -557,6 +558,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
   G.currentScreen=id;
+  document.body.classList.toggle('in-game',id!=='start'&&id!=='rules');
   clearTimer();
   window.scrollTo(0,0);
 }
