@@ -230,6 +230,24 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .stepper-btn:hover{border-color:rgba(255,255,255,0.2);color:#fff}
   .stepper-btn:active{border-color:var(--lime);color:var(--lime)}
 }
+/* ===== ONLINE MODE ===== */
+.room-code{font-family:var(--font-pixel);font-size:clamp(28px,8vw,40px);color:var(--lime);letter-spacing:.3em;text-align:center;margin:16px 0;cursor:pointer;-webkit-user-select:all;user-select:all}
+.room-code-wrap{text-align:center;margin-bottom:24px}
+.room-code-label{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.room-code-hint{font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px}
+.lobby-players{width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.lobby-player{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;font-weight:700;font-size:15px}
+.lobby-player .lp-crown{font-size:16px}
+.lobby-player .lp-name{flex:1}
+.lobby-player .lp-status{font-size:11px;color:rgba(255,255,255,0.3)}
+.lobby-player.disconnected{opacity:.4}
+.online-progress{font-family:var(--font-pixel);font-size:12px;color:var(--teal);text-align:center;margin:12px 0}
+.online-waiting{color:rgba(255,255,255,0.4);font-size:14px;text-align:center;margin:16px 0;line-height:1.8}
+.word-reminder{display:inline-block;padding:6px 16px;background:rgba(170,249,82,0.08);border:1px solid rgba(170,249,82,0.2);border-radius:3px;font-weight:700;color:var(--lime);font-size:15px;margin:8px 0 16px}
+.word-reminder.is-white{color:var(--pink);border-color:rgba(241,185,225,0.2);background:rgba(241,185,225,0.08)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,71,87,0.95);color:#fff;padding:12px 24px;border-radius:4px;font-size:14px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.success{background:rgba(1,169,77,0.95)}
 @media(max-height:600px){
   .flip-scene{width:min(240px,70vw);height:min(320px,50vh)}
   .screen{padding-top:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0))}
@@ -245,10 +263,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="title" style="margin-bottom:16px;line-height:2">誰是臥底</div>
     <div style="font-family:var(--font-pixel);font-size:9px;color:var(--teal);letter-spacing:.15em;margin-bottom:24px">WHO IS THE SPY</div>
     <img src="mascot.png" alt="韭點開始" style="width:180px;height:auto;margin-bottom:24px">
-    <p style="color:rgba(255,255,255,0.4);font-size:14px;max-width:280px;margin:0 auto;line-height:1.8">一支手機，輪流傳閱<br>找出混在人群中的臥底！</p>
+    <p style="color:rgba(255,255,255,0.4);font-size:14px;max-width:280px;margin:0 auto;line-height:1.8">找出混在人群中的臥底！</p>
   </div>
   <div class="btn-group">
-    <button class="btn btn-primary btn-full" onclick="showScreen('setup')">開始遊戲</button>
+    <button class="btn btn-primary btn-full" onclick="showScreen('setup')">同機傳閱</button>
+    <button class="btn btn-dark btn-full" onclick="showScreen('online-join')">線上對戰</button>
     <button class="btn btn-secondary btn-small" onclick="showScreen('rules')">遊戲規則</button>
     <div id="resumeBanner" class="resume-banner" style="display:none">
       <p>偵測到上次未完成的遊戲</p>
@@ -506,6 +525,178 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
+<!-- ===== ONLINE: JOIN ===== -->
+<div id="screen-online-join" class="screen">
+  <div class="section-label">ONLINE</div>
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:24px">線上對戰</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="setup-row col" style="border:none">
+      <div class="setup-label">你的暱稱</div>
+      <input type="text" class="nickname-input" id="onlineName" placeholder="輸入暱稱（1-8字）" maxlength="8" autocomplete="off">
+    </div>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" onclick="ol_createRoom()">建立房間</button>
+    <div style="display:flex;gap:8px;width:100%;max-width:320px;align-items:center">
+      <input type="text" class="nickname-input" id="joinRoomCode" placeholder="輸入房號" maxlength="4" style="text-transform:uppercase;text-align:center;font-family:var(--font-pixel);font-size:18px;letter-spacing:.2em" autocomplete="off">
+      <button class="btn btn-dark" style="min-width:100px" onclick="ol_joinRoom()">加入</button>
+    </div>
+    <button class="btn btn-secondary btn-small" onclick="showScreen('start')">返回</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE: LOBBY ===== -->
+<div id="screen-lobby" class="screen scrollable">
+  <div class="section-label">LOBBY</div>
+  <div class="room-code-wrap">
+    <div class="room-code-label">房間代碼</div>
+    <div class="room-code" id="lobbyRoomCode" onclick="ol_copyCode()">----</div>
+    <div class="room-code-hint">點擊複製</div>
+  </div>
+  <div id="lobbyPlayerList" class="lobby-players"></div>
+  <div id="lobbyConfig" class="card" style="display:none;margin:16px 0">
+    <div class="setup-row">
+      <div class="setup-label">臥底人數<small id="olSpyHint">建議：2 人</small></div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="ol_adj('spyCount',-1)">−</button>
+        <span id="olValSpies" class="stepper-val">2</span>
+        <button class="stepper-btn" onclick="ol_adj('spyCount',1)">+</button>
+      </div>
+    </div>
+    <div class="setup-row">
+      <div class="setup-label">白板人數<small id="olWhiteHint">沒有題目，靠瞎掰</small></div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="ol_adj('whiteCount',-1)">−</button>
+        <span id="olValWhites" class="stepper-val">0</span>
+        <button class="stepper-btn" onclick="ol_adj('whiteCount',1)">+</button>
+      </div>
+    </div>
+    <div class="setup-row col">
+      <div class="setup-label">題目來源</div>
+      <div class="word-source-tabs">
+        <button class="word-tab active" data-src="random" onclick="ol_setWordSource('random')">隨機題庫</button>
+        <button class="word-tab" data-src="custom" onclick="ol_setWordSource('custom')">自訂題目</button>
+      </div>
+      <div id="olCustomInputs" class="custom-inputs">
+        <input type="text" id="olCustomCivilian" placeholder="平民的詞" autocomplete="off">
+        <input type="text" id="olCustomSpy" placeholder="臥底的詞" autocomplete="off">
+      </div>
+    </div>
+  </div>
+  <div class="btn-group" style="margin-top:16px">
+    <button class="btn btn-primary btn-full" id="lobbyStartBtn" onclick="ol_startGame()" style="display:none">開始遊戲</button>
+    <div id="lobbyWaitMsg" class="online-waiting">等待房主開始遊戲...</div>
+    <button class="btn btn-secondary btn-small" onclick="ol_leave()">離開房間</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE: REVEAL ===== -->
+<div id="screen-online-reveal" class="screen scrollable">
+  <div class="section-label">YOUR WORD</div>
+  <div class="flip-scene">
+    <div class="flip-card" id="olFlipCard" onclick="ol_flipToggle()">
+      <div class="flip-face flip-front">
+        <img class="spy-icon" src="mascot.png" alt="">
+        <div class="tap-hint">點擊翻牌</div>
+      </div>
+      <div class="flip-face flip-back" id="olFlipBack">
+        <span class="role-hint" id="olRoleHint">你的題目</span>
+        <span class="word-display" id="olWordDisplay">水餃</span>
+      </div>
+    </div>
+  </div>
+  <div id="olRevealActions" style="display:none;width:100%;max-width:320px">
+    <div class="btn-group">
+      <button class="btn btn-primary btn-full" onclick="ol_confirmRevealed()">我記住了</button>
+      <div class="online-progress" id="olRevealProgress">0/0 人已確認</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ONLINE: DESCRIBE ===== -->
+<div id="screen-online-describe" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="olRoundNum">ROUND 1</span>
+    <span class="alive-count" id="olAliveCount">存活：6 人</span>
+  </div>
+  <div id="olDescSpeakerLabel" class="current-speaker">輪到描述</div>
+  <div id="olSpeakerName" class="speaker-name">玩家 1</div>
+  <div class="timer" id="olTimer">60</div>
+  <div id="olMyWord" class="word-reminder" style="display:none"></div>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" id="olDescDoneBtn" onclick="ol_describeDone()" style="display:none">描述完畢</button>
+    <div id="olDescWait" class="online-waiting" style="display:none">等待對方描述...</div>
+    <button class="btn btn-secondary btn-small" id="olPeekBtn" onclick="ol_peekWord()" style="display:none">忘記題目</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE: VOTE ===== -->
+<div id="screen-online-vote" class="screen">
+  <div class="round-bar">
+    <span class="round-num" id="olVoteRound">ROUND 1</span>
+    <span class="alive-count" id="olVoteAlive">存活：6 人</span>
+  </div>
+  <div class="section-label">VOTE</div>
+  <div class="handoff-msg" style="margin-bottom:4px">選出你認為的臥底</div>
+  <div class="online-progress" id="olVoteProgress">已投票 0/0</div>
+  <div class="timer" id="olVoteTimer">30</div>
+  <div id="olVoteGrid" class="vote-grid"></div>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" id="olConfirmVoteBtn" onclick="ol_confirmVote()" disabled>確認投票</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE: RESULT ===== -->
+<div id="screen-online-result" class="screen">
+  <div class="section-label">RESULT</div>
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);margin-bottom:16px">投票結果</div>
+  <div id="olResultList" class="result-list"></div>
+  <div id="olTieMessage" class="tie-msg" style="display:none">
+    <div class="tie-icon">⚖️</div>
+    <p>平票！本輪無人淘汰</p>
+  </div>
+  <div id="olElimReveal" class="eliminated-reveal" style="display:none">
+    <div id="olElimPlayer" class="eliminated-player"></div>
+    <div id="olElimRole" class="eliminated-role"></div>
+  </div>
+  <div class="btn-group" style="margin-top:8px">
+    <button class="btn btn-primary btn-full" id="olResultNextBtn" onclick="ol_nextRound()" style="display:none">繼續遊戲</button>
+    <div id="olResultWait" class="online-waiting">等待房主繼續...</div>
+  </div>
+</div>
+
+<!-- ===== ONLINE: WHITE GUESS ===== -->
+<div id="screen-online-white-guess" class="screen scrollable">
+  <div class="section-label" style="color:var(--pink)">MR. WHITE</div>
+  <div class="title" style="font-size:clamp(14px,3.5vw,20px);color:var(--pink);margin-bottom:8px">白板被抓到了！</div>
+  <div id="olWhiteGuessArea">
+    <p style="color:rgba(255,255,255,0.5);font-size:14px;text-align:center;margin-bottom:24px;line-height:1.8;max-width:300px">最後一次機會——<br>猜出平民的詞就能翻盤！</p>
+    <input type="text" class="guess-input" id="olWhiteGuessInput" placeholder="輸入你的猜測" autocomplete="off">
+    <div class="btn-group" style="margin-top:8px">
+      <button class="btn btn-primary btn-full" style="background:var(--pink);color:var(--black)" onclick="ol_submitWhiteGuess()">確認猜測</button>
+    </div>
+  </div>
+  <div id="olWhiteWaitArea" style="display:none">
+    <div class="online-waiting">等待白板猜詞...</div>
+  </div>
+</div>
+
+<!-- ===== ONLINE: GAME OVER ===== -->
+<div id="screen-online-gameover" class="screen scrollable">
+  <div class="section-label">GAME OVER</div>
+  <div style="font-size:48px;margin-bottom:16px" id="olWinnerEmoji">🎉</div>
+  <div id="olWinnerText" class="winner-text"></div>
+  <div id="olRevealGrid" class="reveal-grid"></div>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-full" id="olPlayAgainBtn" onclick="ol_playAgain()" style="display:none">再玩一局</button>
+    <div id="olGameoverWait" class="online-waiting" style="display:none">等待房主重新開始...</div>
+    <button class="btn btn-secondary btn-small" onclick="ol_leave()">離開房間</button>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="toast"></div>
+
 <div class="credit">Made by <a href="https://www.fromnineon.com" target="_blank">fromnineon 韭點開始</a></div>
 
 <script>
@@ -558,7 +749,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
   G.currentScreen=id;
-  document.body.classList.toggle('in-game',id!=='start'&&id!=='rules');
+  document.body.classList.toggle('in-game',id!=='start'&&id!=='rules'&&id!=='online-join');
   clearTimer();
   window.scrollTo(0,0);
 }
@@ -1145,7 +1336,11 @@ try{
 try{screen.orientation?.lock?.('portrait').catch(()=>{})}catch(e){}
 
 // Prevent accidental refresh
-window.addEventListener('beforeunload',e=>{if(G.roles.length>0&&G.currentScreen!=='start'&&G.currentScreen!=='gameover'){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{
+  const inPassPlay=G.roles.length>0&&G.currentScreen!=='start'&&G.currentScreen!=='gameover';
+  const inOnline=typeof OL!=='undefined'&&OL.roomId&&OL.state&&OL.state.gamePhase!=='waiting'&&OL.state.gamePhase!=='ended';
+  if(inPassPlay||inOnline){e.preventDefault();e.returnValue=''}
+});
 
 // Keyboard detection — hide credit on iOS/Android when keyboard opens
 document.querySelectorAll('input').forEach(inp=>{
@@ -1155,6 +1350,528 @@ document.querySelectorAll('input').forEach(inp=>{
 
 /* ===== GA4 EVENT TRACKING ===== */
 function gae(name,params){try{gtag('event',name,params||{})}catch(e){}}
+
+/* ============================================================
+   ===== ONLINE MODE =====
+   ============================================================ */
+let socket = null;
+let OL = {
+  roomId: null,
+  playerId: null,
+  isHost: false,
+  myWord: null,
+  myRole: null,
+  state: null,       // latest server state
+  selectedVote: null,
+  voteSubmitted: false,
+  timerInterval: null,
+  confirmed: false,   // revealed confirmed
+  localSpyCount: 2,
+  localWhiteCount: 0,
+  localWordSource: 'random',
+};
+
+function ol_toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'success' ? ' success' : '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+function ol_clearTimer() {
+  if (OL.timerInterval) { clearInterval(OL.timerInterval); OL.timerInterval = null; }
+}
+
+function ol_startCountdown(el, endTime, onDone) {
+  ol_clearTimer();
+  function tick() {
+    const left = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    el.textContent = left;
+    el.classList.toggle('warning', left <= 10);
+    if (left <= 0) { ol_clearTimer(); if (onDone) onDone(); }
+  }
+  tick();
+  OL.timerInterval = setInterval(tick, 500);
+}
+
+/* ===== SOCKET INIT ===== */
+function ol_initSocket() {
+  if (socket) return;
+  socket = io();
+  socket.on('connect', () => {
+    // Auto-rejoin on reconnect
+    const savedRoom = sessionStorage.getItem('ol_room');
+    const savedName = sessionStorage.getItem('ol_name');
+    if (savedRoom && savedName && !OL.roomId) {
+      socket.emit('rejoinRoom', { roomId: savedRoom, name: savedName });
+    }
+  });
+
+  socket.on('roomCreated', ({ roomId, playerId }) => {
+    OL.roomId = roomId; OL.playerId = playerId; OL.isHost = true;
+    sessionStorage.setItem('ol_room', roomId);
+    showScreen('lobby');
+  });
+
+  socket.on('roomJoined', ({ roomId, playerId, reconnected }) => {
+    OL.roomId = roomId; OL.playerId = playerId;
+    sessionStorage.setItem('ol_room', roomId);
+    if (reconnected) ol_toast('重新連線成功', 'success');
+    // Don't navigate if already on a game screen
+    if (!OL.state || OL.state.gamePhase === 'waiting') showScreen('lobby');
+  });
+
+  socket.on('state', (state) => {
+    OL.state = state;
+    OL.isHost = state.hostId === OL.playerId;
+    ol_renderState(state);
+  });
+
+  socket.on('error', ({ message }) => { ol_toast(message); });
+
+  socket.on('revealWord', ({ word, role }) => {
+    OL.myWord = word; OL.myRole = role;
+    OL.confirmed = false;
+    ol_showReveal();
+  });
+
+  socket.on('gameStarted', () => {
+    gae('online_game_start', { players: OL.state?.totalPlayers });
+  });
+
+  socket.on('speakerTurn', ({ speakerId, speakerName, endTime, round }) => {
+    ol_showDescribe(speakerId, speakerName, endTime, round);
+  });
+
+  socket.on('votePhase', ({ endTime }) => {
+    OL.voteSubmitted = false; OL.selectedVote = null;
+    ol_showVote(endTime);
+  });
+
+  socket.on('voteProgress', ({ count, total }) => {
+    const el = document.getElementById('olVoteProgress');
+    if (el) el.textContent = '已投票 ' + count + '/' + total;
+  });
+
+  socket.on('voteResult', ({ tally, eliminated, isTie }) => {
+    ol_showResult(tally, eliminated, isTie);
+  });
+
+  socket.on('whiteGuessPhase', ({ whiteId, whiteName }) => {
+    ol_showWhiteGuess(whiteId, whiteName);
+  });
+
+  socket.on('whiteGuessResult', ({ guess, correct, civilianWord }) => {
+    if (correct) ol_toast(guess + ' — 猜對了！白板翻盤！', 'success');
+    else ol_toast('猜錯了！答案是「' + civilianWord + '」');
+  });
+
+  socket.on('gameOver', ({ winner, players }) => {
+    ol_showGameOver(winner, players);
+  });
+
+  socket.on('hostChanged', ({ hostId, hostName }) => {
+    OL.isHost = hostId === OL.playerId;
+    ol_toast(hostName + ' 成為新房主', 'success');
+  });
+
+  socket.on('playerJoined', ({ name }) => {
+    ol_toast(name + ' 加入了房間', 'success');
+  });
+
+  socket.on('playerLeft', ({ name }) => {
+    ol_toast(name + ' 離開了');
+  });
+
+  socket.on('playerDisconnected', ({ name }) => {
+    ol_toast(name + ' 斷線了');
+  });
+
+  socket.on('playerReconnected', ({ name }) => {
+    ol_toast(name + ' 重新連線', 'success');
+  });
+
+  socket.on('peekWordResult', ({ word, role }) => {
+    ol_toast('你的詞：' + word, 'success');
+  });
+
+  socket.on('disconnect', () => {
+    ol_toast('連線中斷，嘗試重新連線...');
+  });
+}
+
+/* ===== ROOM ACTIONS ===== */
+function ol_createRoom() {
+  const name = document.getElementById('onlineName').value.trim();
+  if (!name || name.length < 1 || name.length > 8) { ol_toast('請輸入暱稱（1-8字）'); return; }
+  sessionStorage.setItem('ol_name', name);
+  ol_initSocket();
+  socket.emit('createRoom', { name });
+  gae('online_room_created');
+}
+
+function ol_joinRoom() {
+  const name = document.getElementById('onlineName').value.trim();
+  const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
+  if (!name || name.length < 1 || name.length > 8) { ol_toast('請輸入暱稱（1-8字）'); return; }
+  if (!code || code.length !== 4) { ol_toast('請輸入 4 碼房號'); return; }
+  sessionStorage.setItem('ol_name', name);
+  ol_initSocket();
+  socket.emit('joinRoom', { name, roomId: code });
+  gae('online_room_joined');
+}
+
+function ol_leave() {
+  if (socket) socket.emit('leaveRoom');
+  OL.roomId = null; OL.playerId = null; OL.isHost = false;
+  OL.myWord = null; OL.myRole = null; OL.state = null;
+  OL.confirmed = false;
+  ol_clearTimer();
+  sessionStorage.removeItem('ol_room');
+  sessionStorage.removeItem('ol_name');
+  showScreen('start');
+}
+
+function ol_copyCode() {
+  if (!OL.roomId) return;
+  navigator.clipboard?.writeText(OL.roomId).then(() => ol_toast('已複製房號', 'success')).catch(() => {});
+}
+
+/* ===== LOBBY ===== */
+function ol_renderState(s) {
+  // Lobby
+  if (s.gamePhase === 'waiting') {
+    document.getElementById('lobbyRoomCode').textContent = s.roomId || '----';
+    const list = document.getElementById('lobbyPlayerList');
+    list.innerHTML = '';
+    s.players.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'lobby-player' + (p.disconnected ? ' disconnected' : '');
+      div.innerHTML = (p.id === s.hostId ? '<span class="lp-crown">👑</span>' : '') +
+        '<span class="lp-name">' + esc(p.name) + '</span>' +
+        (p.disconnected ? '<span class="lp-status">斷線</span>' : '');
+      list.appendChild(div);
+    });
+
+    // Host controls
+    const cfg = document.getElementById('lobbyConfig');
+    const startBtn = document.getElementById('lobbyStartBtn');
+    const waitMsg = document.getElementById('lobbyWaitMsg');
+    if (OL.isHost) {
+      cfg.style.display = 'block';
+      startBtn.style.display = 'block';
+      startBtn.disabled = s.players.length < 4;
+      startBtn.textContent = s.players.length < 4 ? '至少 4 人' : '開始遊戲（' + s.players.length + ' 人）';
+      waitMsg.style.display = 'none';
+      ol_updateLobbyConfig(s);
+    } else {
+      cfg.style.display = 'none';
+      startBtn.style.display = 'none';
+      waitMsg.style.display = 'block';
+      waitMsg.textContent = '等待房主開始遊戲...（' + s.players.length + ' 人）';
+    }
+  }
+
+  // Reveal progress
+  if (s.gamePhase === 'revealing') {
+    const el = document.getElementById('olRevealProgress');
+    if (el) el.textContent = s.revealedCount + '/' + s.totalPlayers + ' 人已確認';
+  }
+
+  // Result/GameOver host buttons
+  if (s.gamePhase === 'result') {
+    document.getElementById('olResultNextBtn').style.display = OL.isHost ? 'block' : 'none';
+    document.getElementById('olResultWait').style.display = OL.isHost ? 'none' : 'block';
+  }
+  if (s.gamePhase === 'ended') {
+    document.getElementById('olPlayAgainBtn').style.display = OL.isHost ? 'block' : 'none';
+    document.getElementById('olGameoverWait').style.display = OL.isHost ? 'block' : 'none';
+    if (!OL.isHost) document.getElementById('olGameoverWait').style.display = 'block';
+  }
+}
+
+function ol_updateLobbyConfig(s) {
+  const n = s.players.length;
+  const ms = Math.floor((Math.max(n, 4) - 1) / 2);
+  const suggest = n <= 5 ? 1 : n <= 8 ? 2 : 3;
+  document.getElementById('olValSpies').textContent = s.config.spyCount;
+  document.getElementById('olValWhites').textContent = s.config.whiteCount;
+  document.getElementById('olSpyHint').textContent = '建議：' + suggest + ' 人';
+  const civ = n - s.config.spyCount - s.config.whiteCount;
+  document.getElementById('olWhiteHint').textContent = civ < 2 ? '⚠️ 平民人數不足' : s.config.spyCount + s.config.whiteCount >= ms ? '已達特殊角色上限' : '沒有題目，靠瞎掰';
+  OL.localSpyCount = s.config.spyCount;
+  OL.localWhiteCount = s.config.whiteCount;
+  OL.localWordSource = s.config.wordSource;
+}
+
+function ol_adj(field, d) {
+  if (!OL.isHost || !OL.state) return;
+  const cfg = { ...OL.state.config };
+  if (field === 'spyCount') cfg.spyCount = Math.max(1, cfg.spyCount + d);
+  if (field === 'whiteCount') cfg.whiteCount = Math.max(0, cfg.whiteCount + d);
+  socket.emit('updateConfig', cfg);
+}
+
+function ol_setWordSource(src) {
+  if (!OL.isHost) return;
+  const tabs = document.querySelectorAll('#screen-lobby .word-tab');
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.src === src));
+  document.getElementById('olCustomInputs').classList.toggle('show', src === 'custom');
+  const cfg = { wordSource: src };
+  if (src === 'custom') {
+    cfg.civilianWord = document.getElementById('olCustomCivilian').value.trim();
+    cfg.spyWord = document.getElementById('olCustomSpy').value.trim();
+  }
+  socket.emit('updateConfig', cfg);
+}
+
+function ol_startGame() {
+  if (!OL.isHost) return;
+  // Send custom words if custom source
+  if (OL.localWordSource === 'custom') {
+    socket.emit('updateConfig', {
+      civilianWord: document.getElementById('olCustomCivilian').value.trim(),
+      spyWord: document.getElementById('olCustomSpy').value.trim(),
+    });
+  }
+  socket.emit('startGame');
+}
+
+/* ===== ONLINE REVEAL ===== */
+function ol_showReveal() {
+  showScreen('online-reveal');
+  const card = document.getElementById('olFlipCard');
+  card.classList.remove('flipped');
+  document.getElementById('olRevealActions').style.display = 'none';
+
+  const isWhite = OL.myRole === 'white';
+  const back = document.getElementById('olFlipBack');
+  back.classList.toggle('is-white', isWhite);
+  document.getElementById('olRoleHint').textContent = isWhite ? '你是白板' : '你的題目';
+  document.getElementById('olWordDisplay').textContent = OL.myWord;
+}
+
+function ol_flipToggle() {
+  const card = document.getElementById('olFlipCard');
+  if (card.classList.contains('flipped')) {
+    card.classList.remove('flipped');
+    document.getElementById('olRevealActions').style.display = 'none';
+    vibrate(30);
+  } else {
+    card.classList.add('flipped');
+    document.getElementById('olRevealActions').style.display = 'block';
+    vibrate(50);
+  }
+}
+
+function ol_confirmRevealed() {
+  if (OL.confirmed) return;
+  OL.confirmed = true;
+  socket.emit('confirmRevealed');
+  document.getElementById('olFlipCard').classList.remove('flipped');
+  document.getElementById('olRevealActions').style.display = 'none';
+  ol_toast('已確認，等待其他玩家...', 'success');
+}
+
+/* ===== ONLINE DESCRIBE ===== */
+function ol_showDescribe(speakerId, speakerName, endTime, round) {
+  showScreen('online-describe');
+  const s = OL.state;
+  document.getElementById('olRoundNum').textContent = 'ROUND ' + (round || s?.round || 1);
+  document.getElementById('olAliveCount').textContent = '存活：' + (s?.aliveCount || '?') + ' 人';
+  document.getElementById('olSpeakerName').textContent = speakerName;
+
+  const isMySpeaker = speakerId === OL.playerId;
+  document.getElementById('olDescSpeakerLabel').textContent = isMySpeaker ? '輪到你描述！' : '輪到描述';
+  document.getElementById('olDescDoneBtn').style.display = (isMySpeaker || OL.isHost) ? 'block' : 'none';
+  document.getElementById('olDescWait').style.display = (isMySpeaker || OL.isHost) ? 'none' : 'block';
+  document.getElementById('olPeekBtn').style.display = 'block';
+
+  // Show word reminder if it's my turn
+  const wordEl = document.getElementById('olMyWord');
+  if (isMySpeaker && OL.myWord) {
+    wordEl.textContent = OL.myRole === 'white' ? '你是白板' : '你的詞：' + OL.myWord;
+    wordEl.className = 'word-reminder' + (OL.myRole === 'white' ? ' is-white' : '');
+    wordEl.style.display = 'inline-block';
+  } else {
+    wordEl.style.display = 'none';
+  }
+
+  ol_startCountdown(document.getElementById('olTimer'), endTime);
+}
+
+function ol_describeDone() {
+  socket.emit('describeDone');
+}
+
+function ol_peekWord() {
+  socket.emit('peekWord');
+  gae('online_peek_word');
+}
+
+/* ===== ONLINE VOTE ===== */
+function ol_showVote(endTime) {
+  showScreen('online-vote');
+  const s = OL.state;
+  document.getElementById('olVoteRound').textContent = 'ROUND ' + (s?.round || 1);
+  document.getElementById('olVoteAlive').textContent = '存活：' + (s?.aliveCount || '?') + ' 人';
+  document.getElementById('olVoteProgress').textContent = '已投票 0/' + (s?.voteTotal || '?');
+  document.getElementById('olConfirmVoteBtn').disabled = true;
+  OL.selectedVote = null;
+
+  const grid = document.getElementById('olVoteGrid');
+  grid.innerHTML = '';
+  if (!s) return;
+  s.players.forEach((p, i) => {
+    const c = document.createElement('div');
+    c.className = 'vote-card';
+    if (!p.alive) c.classList.add('eliminated');
+    else if (p.id === OL.playerId) c.classList.add('disabled');
+    c.innerHTML = '<span class="player-num">' + (i + 1) + '</span><span class="player-label">' + esc(p.name) + '</span>';
+    if (p.alive && p.id !== OL.playerId) {
+      c.addEventListener('click', () => {
+        if (OL.voteSubmitted) return;
+        OL.selectedVote = p.id;
+        document.querySelectorAll('#olVoteGrid .vote-card').forEach(x => x.classList.remove('selected'));
+        c.classList.add('selected');
+        document.getElementById('olConfirmVoteBtn').disabled = false;
+        vibrate(30);
+      });
+    }
+    grid.appendChild(c);
+  });
+
+  ol_startCountdown(document.getElementById('olVoteTimer'), endTime);
+
+  // Check if player is alive
+  const me = s.players.find(p => p.id === OL.playerId);
+  if (me && !me.alive) {
+    document.getElementById('olConfirmVoteBtn').style.display = 'none';
+  } else {
+    document.getElementById('olConfirmVoteBtn').style.display = 'block';
+  }
+}
+
+function ol_confirmVote() {
+  if (!OL.selectedVote || OL.voteSubmitted) return;
+  OL.voteSubmitted = true;
+  socket.emit('submitVote', { targetId: OL.selectedVote });
+  document.getElementById('olConfirmVoteBtn').disabled = true;
+  document.getElementById('olConfirmVoteBtn').textContent = '已投票';
+  vibrate(50);
+  gae('online_vote_cast');
+}
+
+/* ===== ONLINE RESULT ===== */
+function ol_showResult(tally, eliminated, isTie) {
+  showScreen('online-result');
+  ol_clearTimer();
+  const list = document.getElementById('olResultList');
+  list.innerHTML = ''; list.style.display = 'flex';
+
+  const total = OL.state?.voteTotal || 1;
+  const max = tally[0]?.count || 0;
+
+  tally.forEach(({ id, name, count }) => {
+    const row = document.createElement('div');
+    row.className = 'result-row';
+    if (count === max) row.classList.add('top-vote');
+    const pct = (count / total) * 100;
+    row.innerHTML = '<span class="r-name">' + esc(name) + '</span><div class="result-bar-wrap"><div class="result-bar" style="width:0%"></div></div><span class="r-votes">' + count + '</span>';
+    list.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { row.querySelector('.result-bar').style.width = pct + '%'; }));
+  });
+
+  const tieMsg = document.getElementById('olTieMessage');
+  const elimReveal = document.getElementById('olElimReveal');
+
+  if (isTie) {
+    tieMsg.style.display = 'block';
+    elimReveal.style.display = 'none';
+    document.getElementById('olResultNextBtn').textContent = '進入下一輪';
+  } else if (eliminated) {
+    tieMsg.style.display = 'none';
+    elimReveal.style.display = 'block';
+    const role = eliminated.role;
+    document.getElementById('olElimPlayer').textContent = eliminated.name;
+    document.getElementById('olElimPlayer').style.color = role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--lime)';
+    const re = document.getElementById('olElimRole');
+    re.textContent = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
+    re.style.background = role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--green)';
+    re.style.color = role === 'civilian' ? '#fff' : 'var(--black)';
+    document.getElementById('olResultNextBtn').textContent = role === 'white' ? '白板猜詞' : '繼續遊戲';
+    vibrate(100);
+  }
+
+  document.getElementById('olResultNextBtn').style.display = OL.isHost ? 'block' : 'none';
+  document.getElementById('olResultWait').style.display = OL.isHost ? 'none' : 'block';
+}
+
+function ol_nextRound() {
+  if (!OL.isHost) return;
+  socket.emit('nextRound');
+}
+
+/* ===== ONLINE WHITE GUESS ===== */
+function ol_showWhiteGuess(whiteId, whiteName) {
+  showScreen('online-white-guess');
+  const isMe = whiteId === OL.playerId;
+  document.getElementById('olWhiteGuessArea').style.display = isMe ? 'block' : 'none';
+  document.getElementById('olWhiteWaitArea').style.display = isMe ? 'none' : 'block';
+  if (isMe) {
+    document.getElementById('olWhiteGuessInput').value = '';
+    setTimeout(() => document.getElementById('olWhiteGuessInput').focus(), 400);
+  }
+}
+
+function ol_submitWhiteGuess() {
+  const guess = document.getElementById('olWhiteGuessInput').value.trim();
+  if (!guess) { ol_toast('請輸入你的猜測'); return; }
+  socket.emit('submitWhiteGuess', { guess });
+  gae('online_white_guess');
+}
+
+/* ===== ONLINE GAME OVER ===== */
+function ol_showGameOver(winner, players) {
+  showScreen('online-gameover');
+  ol_clearTimer();
+  gae('online_game_over', { winner });
+
+  const emoji = document.getElementById('olWinnerEmoji');
+  const text = document.getElementById('olWinnerText');
+  if (winner === 'civilian') { emoji.textContent = '🎉'; text.innerHTML = '<span class="winner-civilian">平民陣營獲勝！</span>'; }
+  else if (winner === 'spy') { emoji.innerHTML = '<img src="mascot.png" style="width:120px;height:auto">'; text.innerHTML = '<span class="winner-spy">臥底陣營獲勝！</span>'; }
+  else { emoji.textContent = '🃏'; text.innerHTML = '<span class="winner-white">白板逆轉獲勝！</span>'; }
+
+  vibrate([100, 50, 100, 50, 200]);
+
+  const grid = document.getElementById('olRevealGrid');
+  grid.innerHTML = '';
+  players.forEach((p, i) => {
+    const r = p.role;
+    const cls = r === 'spy' ? 'rc-spy' : r === 'white' ? 'rc-white' : 'rc-civilian';
+    const rn = r === 'civilian' ? '平民' : r === 'spy' ? '臥底' : '白板';
+    const c = document.createElement('div');
+    c.className = 'reveal-card ' + cls;
+    c.innerHTML = '<div class="rv-num">P' + (i + 1) + '</div><div class="rv-name">' + esc(p.name) + '</div><div class="rv-role">' + esc(rn) + '</div><div class="rv-word">' + esc(p.word) + '</div>';
+    grid.appendChild(c);
+  });
+
+  document.getElementById('olPlayAgainBtn').style.display = OL.isHost ? 'block' : 'none';
+  document.getElementById('olGameoverWait').style.display = OL.isHost ? 'none' : 'block';
+}
+
+function ol_playAgain() {
+  if (!OL.isHost) return;
+  socket.emit('playAgain');
+  gae('online_play_again');
+}
+
+/* ===== KEYBOARD HANDLERS FOR ONLINE INPUTS ===== */
+document.querySelectorAll('#screen-online-join input, #screen-lobby input, #screen-online-white-guess input').forEach(inp => {
+  inp.addEventListener('focus', () => document.body.classList.add('keyboard-open'));
+  inp.addEventListener('blur', () => document.body.classList.remove('keyboard-open'));
+});
 </script>
 </body>
 </html>
