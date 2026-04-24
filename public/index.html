@@ -573,16 +573,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <button class="stepper-btn" onclick="ol_adj('whiteCount',1)">+</button>
       </div>
     </div>
-    <div class="setup-row col">
-      <div class="setup-label">題目來源</div>
-      <div class="word-source-tabs">
-        <button class="word-tab active" data-src="random" onclick="ol_setWordSource('random')">隨機題庫</button>
-        <button class="word-tab" data-src="custom" onclick="ol_setWordSource('custom')">自訂題目</button>
-      </div>
-      <div id="olCustomInputs" class="custom-inputs">
-        <input type="text" id="olCustomCivilian" placeholder="平民的詞" autocomplete="off">
-        <input type="text" id="olCustomSpy" placeholder="臥底的詞" autocomplete="off">
-      </div>
+    <div class="setup-row" style="border:none">
+      <div class="setup-label">題目來源<small>線上模式僅支援隨機題庫</small></div>
+      <div style="font-size:14px;color:var(--lime)">隨機題庫</div>
     </div>
   </div>
   <div class="btn-group" style="margin-top:16px">
@@ -1378,7 +1371,6 @@ let OL = {
   confirmed: false,   // revealed confirmed
   localSpyCount: 2,
   localWhiteCount: 0,
-  localWordSource: 'random',
 };
 
 function ol_toast(msg, type) {
@@ -1617,7 +1609,6 @@ function ol_updateLobbyConfig(s) {
   document.getElementById('olWhiteHint').textContent = civ < 2 ? '⚠️ 平民人數不足' : s.config.spyCount + s.config.whiteCount >= ms ? '已達特殊角色上限' : '沒有題目，靠瞎掰';
   OL.localSpyCount = s.config.spyCount;
   OL.localWhiteCount = s.config.whiteCount;
-  OL.localWordSource = s.config.wordSource;
 }
 
 function ol_adj(field, d) {
@@ -1628,28 +1619,8 @@ function ol_adj(field, d) {
   socket.emit('updateConfig', cfg);
 }
 
-function ol_setWordSource(src) {
-  if (!OL.isHost) return;
-  const tabs = document.querySelectorAll('#screen-lobby .word-tab');
-  tabs.forEach(t => t.classList.toggle('active', t.dataset.src === src));
-  document.getElementById('olCustomInputs').classList.toggle('show', src === 'custom');
-  const cfg = { wordSource: src };
-  if (src === 'custom') {
-    cfg.civilianWord = document.getElementById('olCustomCivilian').value.trim();
-    cfg.spyWord = document.getElementById('olCustomSpy').value.trim();
-  }
-  socket.emit('updateConfig', cfg);
-}
-
 function ol_startGame() {
   if (!OL.isHost) return;
-  // Send custom words if custom source
-  if (OL.localWordSource === 'custom') {
-    socket.emit('updateConfig', {
-      civilianWord: document.getElementById('olCustomCivilian').value.trim(),
-      spyWord: document.getElementById('olCustomSpy').value.trim(),
-    });
-  }
   socket.emit('startGame');
 }
 

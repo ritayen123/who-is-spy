@@ -636,9 +636,8 @@ io.on('connection', (socket) => {
 
     if (config.spyCount !== undefined) room.config.spyCount = Math.max(1, Math.min(config.spyCount, 5));
     if (config.whiteCount !== undefined) room.config.whiteCount = Math.max(0, Math.min(config.whiteCount, 4));
-    if (config.wordSource !== undefined) room.config.wordSource = config.wordSource === 'custom' ? 'custom' : 'random';
-    if (config.civilianWord !== undefined) room.config.civilianWord = String(config.civilianWord).slice(0, 20);
-    if (config.spyWord !== undefined) room.config.spyWord = String(config.spyWord).slice(0, 20);
+    // Online mode always uses random words (host is also a player)
+    room.config.wordSource = 'random';
 
     emitState(room.id);
   });
