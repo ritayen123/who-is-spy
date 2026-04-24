@@ -25,7 +25,16 @@
 <link rel="manifest" id="pwa-manifest">
 <!-- GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-K318HMNR62"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-K318HMNR62');</script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());
+const _ref=new URLSearchParams(location.search).get('r');
+const _gaConf={};
+if(_ref==='ig'){_gaConf.campaign_source='instagram';_gaConf.campaign_medium='dm';_gaConf.campaign_name='reels'}
+else if(_ref==='f'){_gaConf.campaign_source='friend';_gaConf.campaign_medium='share';_gaConf.campaign_name='forward'}
+else if(_ref){_gaConf.campaign_source=_ref;_gaConf.campaign_medium='link'}
+gtag('config','G-K318HMNR62',_gaConf);
+if(_ref){history.replaceState(null,'',location.pathname)}
+</script>
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
