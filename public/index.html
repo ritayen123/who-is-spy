@@ -553,7 +553,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="room-code-wrap">
     <div class="room-code-label">房間代碼</div>
     <div class="room-code" id="lobbyRoomCode" onclick="ol_copyCode()">----</div>
-    <div class="room-code-hint">點擊複製</div>
+    <div class="room-code-hint">點擊複製邀請連結</div>
   </div>
   <div id="lobbyPlayerList" class="lobby-players"></div>
   <div id="lobbyConfig" class="card" style="display:none;margin:16px 0">
@@ -1334,6 +1334,14 @@ try{
   document.getElementById('pwa-manifest').href=URL.createObjectURL(b);
 }catch(e){}
 
+// Auto-fill room code from URL param (?room=XXXX)
+const _roomParam = new URLSearchParams(location.search).get('room');
+if (_roomParam && _roomParam.length === 4) {
+  showScreen('online-join');
+  document.getElementById('joinRoomCode').value = _roomParam.toUpperCase();
+  history.replaceState(null, '', location.pathname);
+}
+
 // Lock orientation
 try{screen.orientation?.lock?.('portrait').catch(()=>{})}catch(e){}
 
@@ -1507,6 +1515,7 @@ function ol_createRoom() {
   const name = document.getElementById('onlineName').value.trim();
   if (!name || name.length < 1 || name.length > 8) { ol_toast('請輸入暱稱（1-8字）'); return; }
   sessionStorage.setItem('ol_name', name);
+  ol_toast('連線中...', 'success');
   ol_initSocket();
   socket.emit('createRoom', { name });
   gae('online_room_created');
@@ -1518,12 +1527,15 @@ function ol_joinRoom() {
   if (!name || name.length < 1 || name.length > 8) { ol_toast('請輸入暱稱（1-8字）'); return; }
   if (!code || code.length !== 4) { ol_toast('請輸入 4 碼房號'); return; }
   sessionStorage.setItem('ol_name', name);
+  ol_toast('加入中...', 'success');
   ol_initSocket();
   socket.emit('joinRoom', { name, roomId: code });
   gae('online_room_joined');
 }
 
 function ol_leave() {
+  const inGame = OL.state && OL.state.gamePhase !== 'waiting' && OL.state.gamePhase !== 'ended';
+  if (inGame && !confirm('遊戲進行中，確定要離開嗎？')) return;
   if (socket) socket.emit('leaveRoom');
   OL.roomId = null; OL.playerId = null; OL.isHost = false;
   OL.myWord = null; OL.myRole = null; OL.state = null;
@@ -1536,7 +1548,10 @@ function ol_leave() {
 
 function ol_copyCode() {
   if (!OL.roomId) return;
-  navigator.clipboard?.writeText(OL.roomId).then(() => ol_toast('已複製房號', 'success')).catch(() => {});
+  const url = location.origin + '?room=' + OL.roomId;
+  navigator.clipboard?.writeText(url).then(() => ol_toast('已複製邀請連結', 'success')).catch(() => {
+    navigator.clipboard?.writeText(OL.roomId).then(() => ol_toast('已複製房號', 'success')).catch(() => {});
+  });
 }
 
 /* ===== LOBBY ===== */
@@ -1587,8 +1602,7 @@ function ol_renderState(s) {
   }
   if (s.gamePhase === 'ended') {
     document.getElementById('olPlayAgainBtn').style.display = OL.isHost ? 'block' : 'none';
-    document.getElementById('olGameoverWait').style.display = OL.isHost ? 'block' : 'none';
-    if (!OL.isHost) document.getElementById('olGameoverWait').style.display = 'block';
+    document.getElementById('olGameoverWait').style.display = OL.isHost ? 'none' : 'block';
   }
 }
 
