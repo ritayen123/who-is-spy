@@ -200,6 +200,11 @@ function startGame(roomId) {
   io.to(roomId).emit('gameStarted', { playerCount: n, spyCount: spies, whiteCount: whites });
   emitState(roomId);
 
+  // Auto-confirm bots
+  setTimeout(() => {
+    room.players.filter(p => p.isBot).forEach(p => confirmRevealed(roomId, p.id));
+  }, 500);
+
   // Reveal timeout
   room.timers.reveal = setTimeout(() => {
     if (room.gamePhase === 'revealing') {
@@ -245,11 +250,11 @@ function startSpeakerTurn(roomId) {
   const room = getRoom(roomId);
   if (!room || room.gamePhase !== 'describing') return;
 
-  // Skip disconnected speakers
+  // Skip disconnected or bot speakers
   while (room.speakerIdx < room.speakerOrder.length) {
     const sid = room.speakerOrder[room.speakerIdx];
     const p = findPlayerBySocket(room, sid);
-    if (p && p.alive && !p.disconnected) break;
+    if (p && p.alive && !p.disconnected && !p.isBot) break;
     room.speakerIdx++;
   }
 
@@ -300,6 +305,18 @@ function startVotePhase(roomId) {
 
   io.to(roomId).emit('votePhase', { endTime });
   emitState(roomId);
+
+  // Auto-vote for bots (random target)
+  setTimeout(() => {
+    const alive = room.players.filter(p => p.alive && !p.disconnected);
+    room.players.filter(p => p.isBot && p.alive).forEach(bot => {
+      const targets = alive.filter(t => t.id !== bot.id);
+      if (targets.length > 0) {
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        submitVote(roomId, bot.id, target.id);
+      }
+    });
+  }, 1000);
 
   clearRoomTimer(room, 'vote');
   room.timers.vote = setTimeout(() => {
@@ -640,6 +657,19 @@ io.on('connection', (socket) => {
     room.config.wordSource = 'random';
 
     emitState(room.id);
+  });
+
+  socket.on('addBots', () => {
+    const room = getRoom(socket.data.roomId);
+    if (!room || room.hostId !== socket.id || room.gamePhase !== 'waiting') return;
+    const botNames = ['機器人A', '機器人B', '機器人C', '機器人D', '機器人E'];
+    let added = 0;
+    while (room.players.length < MIN_PLAYERS && added < botNames.length) {
+      const botId = 'bot_' + room.id + '_' + added;
+      room.players.push({ id: botId, name: botNames[added], alive: true, disconnected: false, isBot: true });
+      added++;
+    }
+    if (added > 0) emitState(room.id);
   });
 
   socket.on('startGame', () => {

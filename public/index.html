@@ -580,6 +580,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="btn-group" style="margin-top:16px">
     <button class="btn btn-primary btn-full" id="lobbyStartBtn" onclick="ol_startGame()" style="display:none">開始遊戲</button>
+    <button class="btn btn-secondary btn-small" id="lobbyTestBtn" onclick="ol_addBots()" style="display:none">＋ 加入測試機器人（湊滿 4 人）</button>
     <div id="lobbyWaitMsg" class="online-waiting">等待房主開始遊戲...</div>
     <button class="btn btn-secondary btn-small" onclick="ol_leave()">離開房間</button>
   </div>
@@ -1566,16 +1567,19 @@ function ol_renderState(s) {
     const cfg = document.getElementById('lobbyConfig');
     const startBtn = document.getElementById('lobbyStartBtn');
     const waitMsg = document.getElementById('lobbyWaitMsg');
+    const testBtn = document.getElementById('lobbyTestBtn');
     if (OL.isHost) {
       cfg.style.display = 'block';
       startBtn.style.display = 'block';
       startBtn.disabled = s.players.length < 4;
       startBtn.textContent = s.players.length < 4 ? '至少 4 人' : '開始遊戲（' + s.players.length + ' 人）';
+      testBtn.style.display = s.players.length < 4 ? 'block' : 'none';
       waitMsg.style.display = 'none';
       ol_updateLobbyConfig(s);
     } else {
       cfg.style.display = 'none';
       startBtn.style.display = 'none';
+      testBtn.style.display = 'none';
       waitMsg.style.display = 'block';
       waitMsg.textContent = '等待房主開始遊戲...（' + s.players.length + ' 人）';
     }
@@ -1617,6 +1621,11 @@ function ol_adj(field, d) {
   if (field === 'spyCount') cfg.spyCount = Math.max(1, cfg.spyCount + d);
   if (field === 'whiteCount') cfg.whiteCount = Math.max(0, cfg.whiteCount + d);
   socket.emit('updateConfig', cfg);
+}
+
+function ol_addBots() {
+  if (!OL.isHost) return;
+  socket.emit('addBots');
 }
 
 function ol_startGame() {
