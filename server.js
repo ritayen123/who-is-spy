@@ -59,7 +59,7 @@ function createRoom(id, hostId) {
     hostId,
     players: [],          // [{ id, name, alive, disconnected, disconnectTimer }]
     gamePhase: 'waiting', // waiting | revealing | describing | voting | result | whiteGuess | ended
-    config: { spyCount: 2, whiteCount: 0, wordSource: 'random', civilianWord: '', spyWord: '' },
+    config: { spyCount: 1, whiteCount: 0, wordSource: 'random', civilianWord: '', spyWord: '' },
     roles: {},            // { socketId: 'civilian'|'spy'|'white' }
     words: {},            // { socketId: 'word' }
     civilianWord: '',
@@ -90,6 +90,21 @@ function findPlayerBySocket(room, socketId) {
 
 function suggestSpies(n) { return n <= 5 ? 1 : n <= 8 ? 2 : 3; }
 function maxSpecial(n) { return Math.floor((n - 1) / 2); }
+
+// Clamp config to valid range for current player count
+function clampConfig(room) {
+  const n = room.players.length;
+  const ms = maxSpecial(Math.max(n, MIN_PLAYERS));
+  room.config.spyCount = Math.max(1, Math.min(room.config.spyCount, ms));
+  room.config.whiteCount = Math.max(0, Math.min(room.config.whiteCount, ms - room.config.spyCount));
+  // Ensure civilians >= 2
+  while (n - room.config.spyCount - room.config.whiteCount < 2 && room.config.whiteCount > 0) {
+    room.config.whiteCount--;
+  }
+  while (n - room.config.spyCount - room.config.whiteCount < 2 && room.config.spyCount > 1) {
+    room.config.spyCount--;
+  }
+}
 
 // ─── State Broadcasting ─────────────────────────────────
 function emitState(roomId) {
@@ -593,6 +608,7 @@ io.on('connection', (socket) => {
     socket.join(rid);
 
     clearRoomTimer(room, 'cleanup');
+    clampConfig(room);
     socket.emit('roomJoined', { roomId: rid, playerId: socket.id });
     io.to(rid).emit('playerJoined', { id: socket.id, name });
     emitState(rid);
@@ -651,10 +667,10 @@ io.on('connection', (socket) => {
     const room = getRoom(socket.data.roomId);
     if (!room || room.hostId !== socket.id || room.gamePhase !== 'waiting') return;
 
-    if (config.spyCount !== undefined) room.config.spyCount = Math.max(1, Math.min(config.spyCount, 5));
-    if (config.whiteCount !== undefined) room.config.whiteCount = Math.max(0, Math.min(config.whiteCount, 4));
-    // Online mode always uses random words (host is also a player)
+    if (config.spyCount !== undefined) room.config.spyCount = config.spyCount;
+    if (config.whiteCount !== undefined) room.config.whiteCount = config.whiteCount;
     room.config.wordSource = 'random';
+    clampConfig(room);
 
     emitState(room.id);
   });
@@ -669,7 +685,7 @@ io.on('connection', (socket) => {
       room.players.push({ id: botId, name: botNames[added], alive: true, disconnected: false, isBot: true });
       added++;
     }
-    if (added > 0) emitState(room.id);
+    if (added > 0) { clampConfig(room); emitState(room.id); }
   });
 
   socket.on('startGame', () => {
@@ -759,6 +775,7 @@ function handleDisconnect(socket, voluntary) {
     io.to(roomId).emit('playerLeft', { id: socket.id, name: player.name });
 
     if (room.hostId === socket.id) migrateHost(room);
+    if (room.gamePhase === 'waiting') clampConfig(room);
     if (room.players.filter(p => !p.disconnected).length === 0) {
       scheduleCleanup(room);
     } else {

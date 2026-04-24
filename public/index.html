@@ -1617,9 +1617,11 @@ function ol_updateLobbyConfig(s) {
 
 function ol_adj(field, d) {
   if (!OL.isHost || !OL.state) return;
+  const n = OL.state.players.length;
+  const ms = Math.floor((Math.max(n, 4) - 1) / 2);
   const cfg = { ...OL.state.config };
-  if (field === 'spyCount') cfg.spyCount = Math.max(1, cfg.spyCount + d);
-  if (field === 'whiteCount') cfg.whiteCount = Math.max(0, cfg.whiteCount + d);
+  if (field === 'spyCount') cfg.spyCount = Math.max(1, Math.min(ms - cfg.whiteCount, cfg.spyCount + d));
+  if (field === 'whiteCount') cfg.whiteCount = Math.max(0, Math.min(ms - cfg.spyCount, cfg.whiteCount + d));
   socket.emit('updateConfig', cfg);
 }
 
