@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>誰是臥底 | 韭點開始 fromnineon</title>
-<meta name="description" content="誰是臥底線上派對遊戲，一支手機就能玩！由韭點開始 fromnineon 製作。">
+<meta name="description" content="誰是臥底線上派對遊戲，支援線上多人對戰＆同機傳閱！由韭點開始 fromnineon 製作。">
 <!-- OG -->
 <meta property="og:title" content="誰是臥底 | fromnineon 韭點開始">
-<meta property="og:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
+<meta property="og:description" content="線上多人對戰＆同機傳閱！找出混在人群中的臥底！">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://spy.fromnineon.com">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="誰是臥底 | fromnineon 韭點開始">
-<meta name="twitter:description" content="一支手機就能玩的派對遊戲！找出混在人群中的臥底！">
+<meta name="twitter:description" content="線上多人對戰＆同機傳閱！找出混在人群中的臥底！">
 <!-- Favicon -->
 <link rel="icon" href="mascot.png" type="image/png">
 <link rel="apple-touch-icon" href="mascot.png">
@@ -241,6 +241,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .lobby-player{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;font-weight:700;font-size:15px}
 .lobby-player .lp-crown{font-size:16px}
 .lobby-player .lp-name{flex:1}
+.lobby-player .lp-you{font-size:11px;color:var(--lime);margin-left:4px}
 .lobby-player .lp-status{font-size:11px;color:rgba(255,255,255,0.3)}
 .lobby-player.disconnected{opacity:.4}
 .online-progress{font-family:var(--font-pixel);font-size:12px;color:var(--teal);text-align:center;margin:12px 0}
@@ -560,17 +561,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="setup-row">
       <div class="setup-label">臥底人數<small id="olSpyHint">建議：2 人</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="ol_adj('spyCount',-1)">−</button>
+        <button class="stepper-btn" id="olBtnSpyMinus" onclick="ol_adj('spyCount',-1)">−</button>
         <span id="olValSpies" class="stepper-val">2</span>
-        <button class="stepper-btn" onclick="ol_adj('spyCount',1)">+</button>
+        <button class="stepper-btn" id="olBtnSpyPlus" onclick="ol_adj('spyCount',1)">+</button>
       </div>
     </div>
     <div class="setup-row">
       <div class="setup-label">白板人數<small id="olWhiteHint">沒有題目，靠瞎掰</small></div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="ol_adj('whiteCount',-1)">−</button>
+        <button class="stepper-btn" id="olBtnWhiteMinus" onclick="ol_adj('whiteCount',-1)">−</button>
         <span id="olValWhites" class="stepper-val">0</span>
-        <button class="stepper-btn" onclick="ol_adj('whiteCount',1)">+</button>
+        <button class="stepper-btn" id="olBtnWhitePlus" onclick="ol_adj('whiteCount',1)">+</button>
       </div>
     </div>
     <div class="setup-row" style="border:none">
@@ -606,6 +607,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <button class="btn btn-primary btn-full" onclick="ol_confirmRevealed()">我記住了</button>
       <div class="online-progress" id="olRevealProgress">0/0 人已確認</div>
     </div>
+  </div>
+  <div id="olRevealWait" style="display:none;text-align:center">
+    <div class="online-waiting" style="margin-bottom:8px">已確認，等待其他玩家...</div>
+    <div class="online-progress" id="olRevealProgressWait">0/0 人已確認</div>
   </div>
 </div>
 
@@ -1559,6 +1564,7 @@ function ol_renderState(s) {
       div.className = 'lobby-player' + (p.disconnected ? ' disconnected' : '');
       div.innerHTML = (p.id === s.hostId ? '<span class="lp-crown">👑</span>' : '') +
         '<span class="lp-name">' + esc(p.name) + '</span>' +
+        (p.id === OL.playerId ? '<span class="lp-you">你</span>' : '') +
         (p.disconnected ? '<span class="lp-status">斷線</span>' : '');
       list.appendChild(div);
     });
@@ -1587,8 +1593,11 @@ function ol_renderState(s) {
 
   // Reveal progress
   if (s.gamePhase === 'revealing') {
+    const txt = s.revealedCount + '/' + s.totalPlayers + ' 人已確認';
     const el = document.getElementById('olRevealProgress');
-    if (el) el.textContent = s.revealedCount + '/' + s.totalPlayers + ' 人已確認';
+    if (el) el.textContent = txt;
+    const el2 = document.getElementById('olRevealProgressWait');
+    if (el2) el2.textContent = txt;
   }
 
   // Result/GameOver host buttons
@@ -1613,6 +1622,12 @@ function ol_updateLobbyConfig(s) {
   document.getElementById('olWhiteHint').textContent = civ < 2 ? '⚠️ 平民人數不足' : s.config.spyCount + s.config.whiteCount >= ms ? '已達特殊角色上限' : '沒有題目，靠瞎掰';
   OL.localSpyCount = s.config.spyCount;
   OL.localWhiteCount = s.config.whiteCount;
+
+  // Disable stepper buttons at limits
+  document.getElementById('olBtnSpyMinus').disabled = s.config.spyCount <= 1;
+  document.getElementById('olBtnSpyPlus').disabled = s.config.spyCount >= ms - s.config.whiteCount;
+  document.getElementById('olBtnWhiteMinus').disabled = s.config.whiteCount <= 0;
+  document.getElementById('olBtnWhitePlus').disabled = s.config.whiteCount >= ms - s.config.spyCount;
 }
 
 function ol_adj(field, d) {
@@ -1638,6 +1653,10 @@ function ol_startGame() {
 /* ===== ONLINE REVEAL ===== */
 function ol_showReveal() {
   showScreen('online-reveal');
+  // Reset reveal screen state
+  document.querySelector('#screen-online-reveal .flip-scene').style.display = '';
+  document.querySelector('#screen-online-reveal .section-label').textContent = 'YOUR WORD';
+  document.getElementById('olRevealWait').style.display = 'none';
   const card = document.getElementById('olFlipCard');
   card.classList.remove('flipped');
   document.getElementById('olRevealActions').style.display = 'none';
@@ -1668,7 +1687,10 @@ function ol_confirmRevealed() {
   socket.emit('confirmRevealed');
   document.getElementById('olFlipCard').classList.remove('flipped');
   document.getElementById('olRevealActions').style.display = 'none';
-  ol_toast('已確認，等待其他玩家...', 'success');
+  // Show waiting state
+  document.querySelector('#screen-online-reveal .flip-scene').style.display = 'none';
+  document.querySelector('#screen-online-reveal .section-label').textContent = 'WAITING';
+  document.getElementById('olRevealWait').style.display = 'block';
 }
 
 /* ===== ONLINE DESCRIBE ===== */
@@ -1681,7 +1703,10 @@ function ol_showDescribe(speakerId, speakerName, endTime, round) {
 
   const isMySpeaker = speakerId === OL.playerId;
   document.getElementById('olDescSpeakerLabel').textContent = isMySpeaker ? '輪到你描述！' : '輪到描述';
-  document.getElementById('olDescDoneBtn').style.display = (isMySpeaker || OL.isHost) ? 'block' : 'none';
+  const descBtn = document.getElementById('olDescDoneBtn');
+  descBtn.style.display = (isMySpeaker || OL.isHost) ? 'block' : 'none';
+  descBtn.disabled = false;
+  descBtn.textContent = '描述完畢';
   document.getElementById('olDescWait').style.display = (isMySpeaker || OL.isHost) ? 'none' : 'block';
   document.getElementById('olPeekBtn').style.display = 'block';
 
@@ -1700,6 +1725,9 @@ function ol_showDescribe(speakerId, speakerName, endTime, round) {
 
 function ol_describeDone() {
   socket.emit('describeDone');
+  const btn = document.getElementById('olDescDoneBtn');
+  btn.disabled = true;
+  btn.textContent = '已送出';
 }
 
 function ol_peekWord() {
@@ -1741,12 +1769,18 @@ function ol_showVote(endTime) {
 
   ol_startCountdown(document.getElementById('olVoteTimer'), endTime);
 
-  // Check if player is alive
+  // Check if player is alive — dead players see spectator view
   const me = s.players.find(p => p.id === OL.playerId);
   if (me && !me.alive) {
     document.getElementById('olConfirmVoteBtn').style.display = 'none';
+    document.querySelector('#screen-online-vote .handoff-msg').textContent = '你已被淘汰，觀戰中';
+    document.getElementById('olVoteGrid').style.pointerEvents = 'none';
+    document.getElementById('olVoteGrid').style.opacity = '0.5';
   } else {
     document.getElementById('olConfirmVoteBtn').style.display = 'block';
+    document.querySelector('#screen-online-vote .handoff-msg').textContent = '選出你認為的臥底';
+    document.getElementById('olVoteGrid').style.pointerEvents = '';
+    document.getElementById('olVoteGrid').style.opacity = '';
   }
 }
 
