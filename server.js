@@ -398,11 +398,27 @@ function tallyVotes(roomId) {
     const elimPlayer = findPlayerBySocket(room, elimId);
     const role = room.roles[elimId];
 
+    // Check if this elimination would end the game or trigger white guess
+    let autoAdvance = false;
+    if (role === 'white') {
+      autoAdvance = true;
+    } else {
+      const ep = findPlayerBySocket(room, elimId);
+      if (ep) { ep.alive = false; autoAdvance = !!checkWin(room); ep.alive = true; }
+    }
+
     io.to(roomId).emit('voteResult', {
       tally: sorted,
       eliminated: { id: elimId, name: elimPlayer?.name, role },
       isTie: false,
+      autoAdvance,
     });
+
+    if (autoAdvance) {
+      room.timers.autoAdvance = setTimeout(() => {
+        if (room.gamePhase === 'result') afterResult(roomId);
+      }, 3000);
+    }
   }
 
   emitState(roomId);
@@ -411,6 +427,7 @@ function tallyVotes(roomId) {
 function afterResult(roomId) {
   const room = getRoom(roomId);
   if (!room || room.gamePhase !== 'result') return;
+  if (room.timers.autoAdvance) { clearTimeout(room.timers.autoAdvance); room.timers.autoAdvance = null; }
 
   if (room.pendingElimination) {
     const role = room.roles[room.pendingElimination];
@@ -422,6 +439,12 @@ function afterResult(roomId) {
         whiteName: wp?.name || '???',
       });
       emitState(roomId);
+      // White guess timeout — auto-fail if no guess in 30s
+      room.timers.whiteGuess = setTimeout(() => {
+        if (room.gamePhase === 'whiteGuess') {
+          submitWhiteGuess(roomId, room.pendingElimination, '');
+        }
+      }, 30000);
       return;
     }
     // Eliminate the player
@@ -440,6 +463,7 @@ function submitWhiteGuess(roomId, socketId, guess) {
   const room = getRoom(roomId);
   if (!room || room.gamePhase !== 'whiteGuess') return;
   if (socketId !== room.pendingElimination) return;
+  if (room.timers.whiteGuess) { clearTimeout(room.timers.whiteGuess); room.timers.whiteGuess = null; }
 
   const correct = guess.trim().toLowerCase() === room.civilianWord.toLowerCase();
 
@@ -472,7 +496,6 @@ function checkWin(room) {
     else w++;
   });
   if (s === 0 && w === 0) return 'civilian';
-  if (c + s + w <= 3 && s > 0) return 'spy';
   if (s >= c + w) return 'spy';
   return null;
 }
@@ -707,8 +730,8 @@ io.on('connection', (socket) => {
     const room = getRoom(socket.data.roomId);
     if (!room || room.gamePhase !== 'describing') return;
     const currentSpeaker = room.speakerOrder[room.speakerIdx];
-    // Allow speaker or host to advance
-    if (socket.id !== currentSpeaker && socket.id !== room.hostId) return;
+    // Only the speaker themselves can press done
+    if (socket.id !== currentSpeaker) return;
     nextSpeaker(room.id);
   });
 

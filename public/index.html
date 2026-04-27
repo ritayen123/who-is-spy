@@ -1272,7 +1272,6 @@ function checkWin(){
     else w++;
   }
   if(s===0&&w===0)return'civilian';
-  if(c+s+w<=3&&s>0)return'spy';
   if(s>=c+w)return'spy';
   return null;
 }
@@ -1461,8 +1460,8 @@ function ol_initSocket() {
     if (el) el.textContent = '已投票 ' + count + '/' + total;
   });
 
-  socket.on('voteResult', ({ tally, eliminated, isTie }) => {
-    ol_showResult(tally, eliminated, isTie);
+  socket.on('voteResult', ({ tally, eliminated, isTie, autoAdvance }) => {
+    ol_showResult(tally, eliminated, isTie, autoAdvance);
   });
 
   socket.on('whiteGuessPhase', ({ whiteId, whiteName }) => {
@@ -1704,10 +1703,10 @@ function ol_showDescribe(speakerId, speakerName, endTime, round) {
   const isMySpeaker = speakerId === OL.playerId;
   document.getElementById('olDescSpeakerLabel').textContent = isMySpeaker ? '輪到你描述！' : '輪到描述';
   const descBtn = document.getElementById('olDescDoneBtn');
-  descBtn.style.display = (isMySpeaker || OL.isHost) ? 'block' : 'none';
+  descBtn.style.display = isMySpeaker ? 'block' : 'none';
   descBtn.disabled = false;
   descBtn.textContent = '描述完畢';
-  document.getElementById('olDescWait').style.display = (isMySpeaker || OL.isHost) ? 'none' : 'block';
+  document.getElementById('olDescWait').style.display = isMySpeaker ? 'none' : 'block';
   document.getElementById('olPeekBtn').style.display = 'block';
 
   // Show word reminder if it's my turn
@@ -1795,7 +1794,7 @@ function ol_confirmVote() {
 }
 
 /* ===== ONLINE RESULT ===== */
-function ol_showResult(tally, eliminated, isTie) {
+function ol_showResult(tally, eliminated, isTie, autoAdvance) {
   showScreen('online-result');
   ol_clearTimer();
   const list = document.getElementById('olResultList');
@@ -1835,8 +1834,16 @@ function ol_showResult(tally, eliminated, isTie) {
     vibrate(100);
   }
 
-  document.getElementById('olResultNextBtn').style.display = OL.isHost ? 'block' : 'none';
-  document.getElementById('olResultWait').style.display = OL.isHost ? 'none' : 'block';
+  if (autoAdvance) {
+    // Server will auto-advance — hide buttons, show countdown message
+    document.getElementById('olResultNextBtn').style.display = 'none';
+    document.getElementById('olResultWait').style.display = 'block';
+    document.getElementById('olResultWait').textContent = '即將自動繼續...';
+  } else {
+    document.getElementById('olResultNextBtn').style.display = OL.isHost ? 'block' : 'none';
+    document.getElementById('olResultWait').style.display = OL.isHost ? 'none' : 'block';
+    document.getElementById('olResultWait').textContent = '等待房主繼續...';
+  }
 }
 
 function ol_nextRound() {
