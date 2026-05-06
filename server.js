@@ -442,7 +442,7 @@ function afterResult(roomId) {
       // White guess timeout — auto-fail if no guess in 30s
       room.timers.whiteGuess = setTimeout(() => {
         if (room.gamePhase === 'whiteGuess') {
-          submitWhiteGuess(roomId, room.pendingElimination, '');
+          submitWhiteGuess(roomId, room.pendingElimination, '', true);
         }
       }, 30000);
       return;
@@ -459,22 +459,23 @@ function afterResult(roomId) {
   beginDescribePhase(roomId);
 }
 
-function submitWhiteGuess(roomId, socketId, guess) {
+function submitWhiteGuess(roomId, socketId, guess, isTimeout) {
   const room = getRoom(roomId);
   if (!room || room.gamePhase !== 'whiteGuess') return;
   if (socketId !== room.pendingElimination) return;
   if (room.timers.whiteGuess) { clearTimeout(room.timers.whiteGuess); room.timers.whiteGuess = null; }
 
-  const correct = guess.trim().toLowerCase() === room.civilianWord.toLowerCase();
+  const correct = !isTimeout && guess.trim().toLowerCase() === room.civilianWord.toLowerCase();
 
   // Eliminate white
   const p = findPlayerBySocket(room, room.pendingElimination);
   if (p) p.alive = false;
 
   io.to(roomId).emit('whiteGuessResult', {
-    guess: guess.trim(),
+    guess: isTimeout ? null : guess.trim(),
     correct,
     civilianWord: room.civilianWord,
+    timeout: !!isTimeout,
   });
 
   if (correct) {

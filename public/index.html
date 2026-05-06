@@ -811,7 +811,8 @@ function updateSetupUI(){
   document.getElementById('valPlayers').textContent=G.players;
   document.getElementById('valSpies').textContent=G.spies;
   document.getElementById('valWhites').textContent=G.whites;
-  document.getElementById('spyHint').textContent='建議：'+suggestSpies(G.players)+' 人';
+  const suggest=suggestSpies(G.players);
+  document.getElementById('spyHint').textContent=G.spies>suggest?'⚠️ 臥底偏多，平民容錯低':'建議：'+suggest+' 人';
   const civilians=G.players-G.spies-G.whites;
   const ms=maxSpecial();
   document.getElementById('whiteHint').textContent=civilians<2?'⚠️ 平民人數不足':G.spies+G.whites>=ms?'已達特殊角色上限':'沒有題目，靠瞎掰';
@@ -1468,8 +1469,9 @@ function ol_initSocket() {
     ol_showWhiteGuess(whiteId, whiteName);
   });
 
-  socket.on('whiteGuessResult', ({ guess, correct, civilianWord }) => {
+  socket.on('whiteGuessResult', ({ guess, correct, civilianWord, timeout }) => {
     if (correct) ol_toast(guess + ' — 猜對了！白板翻盤！', 'success');
+    else if (timeout) ol_toast('超時未猜！答案是「' + civilianWord + '」');
     else ol_toast('猜錯了！答案是「' + civilianWord + '」');
   });
 
@@ -1616,7 +1618,7 @@ function ol_updateLobbyConfig(s) {
   const suggest = n <= 5 ? 1 : n <= 8 ? 2 : 3;
   document.getElementById('olValSpies').textContent = s.config.spyCount;
   document.getElementById('olValWhites').textContent = s.config.whiteCount;
-  document.getElementById('olSpyHint').textContent = '建議：' + suggest + ' 人';
+  document.getElementById('olSpyHint').textContent = s.config.spyCount > suggest ? '⚠️ 臥底偏多，平民容錯低' : '建議：' + suggest + ' 人';
   const civ = n - s.config.spyCount - s.config.whiteCount;
   document.getElementById('olWhiteHint').textContent = civ < 2 ? '⚠️ 平民人數不足' : s.config.spyCount + s.config.whiteCount >= ms ? '已達特殊角色上限' : '沒有題目，靠瞎掰';
   OL.localSpyCount = s.config.spyCount;
