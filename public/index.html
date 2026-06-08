@@ -468,6 +468,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="section-label">VOTE</div>
   <div id="voterPrompt" class="handoff-msg" style="margin-bottom:4px">玩家 1 請投票</div>
   <div style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">選出你認為的臥底</div>
+  <div class="timer" id="voteTimer">30</div>
   <div id="voteGrid" class="vote-grid"></div>
   <div class="btn-group">
     <button class="btn btn-primary btn-full" id="confirmVoteBtn" onclick="confirmVote()" disabled>確認投票</button>
@@ -641,6 +642,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="handoff-msg" style="margin-bottom:4px">選出你認為的臥底</div>
   <div class="online-progress" id="olVoteProgress">已投票 0/0</div>
   <div class="timer" id="olVoteTimer">30</div>
+  <div id="olVoteMyWord" class="word-reminder" style="display:none"></div>
   <div id="olVoteGrid" class="vote-grid"></div>
   <div class="btn-group">
     <button class="btn btn-primary btn-full" id="olConfirmVoteBtn" onclick="ol_confirmVote()" disabled>確認投票</button>
@@ -659,6 +661,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div id="olElimReveal" class="eliminated-reveal" style="display:none">
     <div id="olElimPlayer" class="eliminated-player"></div>
     <div id="olElimRole" class="eliminated-role"></div>
+    <div id="olElimWord" class="eliminated-word"></div>
   </div>
   <div class="btn-group" style="margin-top:8px">
     <button class="btn btn-primary btn-full" id="olResultNextBtn" onclick="ol_nextRound()" style="display:none">繼續遊戲</button>
@@ -719,10 +722,7 @@ const WORD_BANK=[
 /* ===== STATE ===== */
 let usedWordIndices = [];
 let handoffCb = null;
-let descConfirm = false;
-let descConfirmTimer = null;
-let timerSavedSeconds = 0;
-
+let revealTransitioning = false;
 let G = {
   players: 6, spies: 2, whites: 0,
   wordSource: 'random',
@@ -733,7 +733,7 @@ let G = {
   round: 1,
   speakerOrder: [], speakerIdx: 0,
   votes: {}, currentVoter: 0, voterOrder: [], selectedVote: -1,
-  timerInterval: null, timerSeconds: 60,
+  timerInterval: null, timerEndTime: 0, timerPausedLeft: 0,
   pendingElimination: -1,
   currentScreen: 'start',
 };
@@ -750,7 +750,9 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
   G.currentScreen=id;
-  document.body.classList.toggle('in-game',id!=='start'&&id!=='rules'&&id!=='online-join');
+  const inGame=id!=='start'&&id!=='rules'&&id!=='online-join';
+  document.body.classList.toggle('in-game',inGame);
+  if(inGame)pushGameHistory();
   clearTimer();
   window.scrollTo(0,0);
 }
@@ -770,7 +772,12 @@ function resumeGame(){
   if(!s)return;
   Object.assign(G,s);
   G.timerInterval=null;
-  startDescribePhase();
+  const sc=s.currentScreen;
+  if(sc==='vote-method'||sc==='vote'||sc==='hand-vote'||sc==='result'){
+    showVoteMethod();
+  }else{
+    startDescribePhase();
+  }
 }
 
 /* ===== HANDOFF ===== */
@@ -910,16 +917,18 @@ function flipToggle(){
 }
 
 function confirmSeen(){
+  if(revealTransitioning)return;
+  revealTransitioning=true;
   const idx=G.currentReveal;
   const name=document.getElementById('nicknameInput').value.trim();
   if(name)G.nicknames[idx]=name;
 
-  // Flip card back first
   document.getElementById('flipCard').classList.remove('flipped');
   document.getElementById('revealActions').style.display='none';
 
   const next=idx+1;
   setTimeout(()=>{
+    revealTransitioning=false;
     if(next<G.players){
       beginRevealPhase(next);
     }else{
@@ -949,28 +958,12 @@ function showDescribe(){
   document.getElementById('roundNum').textContent='ROUND '+G.round;
   document.getElementById('aliveCount').textContent='存活：'+aliveCount()+' 人';
   document.getElementById('speakerName').textContent=dn(p);
-  resetDescConfirm();
   startTimer();
 }
 
 function onDescribeDone(){
-  if(!descConfirm){
-    descConfirm=true;
-    const btn=document.getElementById('describeDoneBtn');
-    btn.textContent='確定完成？再按一次';
-    btn.classList.add('btn-confirm-state');
-    vibrate(30);
-    descConfirmTimer=setTimeout(resetDescConfirm,3000);
-  }else{
-    clearTimeout(descConfirmTimer);
-    resetDescConfirm();
-    nextSpeaker();
-  }
-}
-function resetDescConfirm(){
-  descConfirm=false;
-  const btn=document.getElementById('describeDoneBtn');
-  if(btn){btn.textContent='描述完畢';btn.classList.remove('btn-confirm-state')}
+  vibrate(30);
+  nextSpeaker();
 }
 
 function nextSpeaker(){
@@ -982,33 +975,33 @@ function nextSpeaker(){
   }
 }
 
-/* ===== TIMER ===== */
+/* ===== TIMER (Date.now-based, survives background) ===== */
 function startTimer(){
   clearTimer();
-  G.timerSeconds=60;
+  G.timerEndTime=Date.now()+60*1000;
   const el=document.getElementById('timer');
-  el.textContent=G.timerSeconds;
-  el.classList.remove('warning');
-  G.timerInterval=setInterval(()=>{
-    G.timerSeconds--;
-    el.textContent=G.timerSeconds;
-    if(G.timerSeconds<=10)el.classList.add('warning');
-    if(G.timerSeconds<=0){clearTimer();vibrate(200);nextSpeaker()}
-  },1000);
+  function tick(){
+    const left=Math.max(0,Math.ceil((G.timerEndTime-Date.now())/1000));
+    el.textContent=left;
+    el.classList.toggle('warning',left<=10);
+    if(left<=0){clearTimer();vibrate(200);nextSpeaker()}
+  }
+  tick();
+  G.timerInterval=setInterval(tick,500);
 }
-function clearTimer(){if(G.timerInterval){clearInterval(G.timerInterval);G.timerInterval=null}}
-function pauseTimer(){clearTimer();timerSavedSeconds=G.timerSeconds}
+function clearTimer(){if(G.timerInterval){clearInterval(G.timerInterval);G.timerInterval=null}if(G.voteTimerInterval){clearInterval(G.voteTimerInterval);G.voteTimerInterval=null}}
+function pauseTimer(){G.timerPausedLeft=Math.max(0,G.timerEndTime-Date.now());clearTimer()}
 function resumeTimer(){
-  G.timerSeconds=timerSavedSeconds;
+  G.timerEndTime=Date.now()+G.timerPausedLeft;
   const el=document.getElementById('timer');
-  el.textContent=G.timerSeconds;
-  el.classList.toggle('warning',G.timerSeconds<=10);
-  G.timerInterval=setInterval(()=>{
-    G.timerSeconds--;
-    el.textContent=G.timerSeconds;
-    if(G.timerSeconds<=10)el.classList.add('warning');
-    if(G.timerSeconds<=0){clearTimer();vibrate(200);nextSpeaker()}
-  },1000);
+  function tick(){
+    const left=Math.max(0,Math.ceil((G.timerEndTime-Date.now())/1000));
+    el.textContent=left;
+    el.classList.toggle('warning',left<=10);
+    if(left<=0){clearTimer();vibrate(200);nextSpeaker()}
+  }
+  tick();
+  G.timerInterval=setInterval(tick,500);
 }
 
 /* ===== PEEK ===== */
@@ -1027,6 +1020,8 @@ function peekWord(){
   back.classList.toggle('is-white',isWhite);
   document.getElementById('peekHint').textContent=isWhite?'你是白板':'你的題目';
   document.getElementById('peekWord').textContent=G.words[p];
+  if(G.peekTimeout)clearTimeout(G.peekTimeout);
+  G.peekTimeout=setTimeout(closePeek,10000);
 }
 function peekFlipToggle(){
   const card=document.getElementById('peekFlip');
@@ -1040,6 +1035,7 @@ function peekFlipToggle(){
   }
 }
 function closePeek(){
+  if(G.peekTimeout){clearTimeout(G.peekTimeout);G.peekTimeout=null}
   document.getElementById('peekFlip').classList.remove('flipped');
   setTimeout(()=>{
     showScreen('describe');
@@ -1053,6 +1049,7 @@ function showVoteMethod(){
   showScreen('vote-method');
   document.getElementById('vmRound').textContent='ROUND '+G.round;
   document.getElementById('vmAlive').textContent='存活：'+aliveCount()+' 人';
+  saveState();
 }
 
 /* ===== DIGITAL VOTE ===== */
@@ -1061,7 +1058,7 @@ function startDigitalVote(){
   G.votes={};
   G.voterOrder=G.speakerOrder.slice();
   G.currentVoter=0;
-  G.selectedVote=-1;
+  G.selectedVote=null;
   const v=G.voterOrder[0];
   showHandoff('🗳️','請將手機交給',dn(v),'選出你認為的臥底','準備投票',()=>showVoteScreen());
 }
@@ -1072,7 +1069,7 @@ function showVoteScreen(){
   document.getElementById('voteRound').textContent='ROUND '+G.round;
   document.getElementById('voteAlive').textContent='存活：'+aliveCount()+' 人';
   document.getElementById('voterPrompt').textContent=dn(vi)+' 請投票';
-  G.selectedVote=-1;
+  G.selectedVote=null;
   document.getElementById('confirmVoteBtn').disabled=true;
 
   const grid=document.getElementById('voteGrid');
@@ -1095,11 +1092,36 @@ function showVoteScreen(){
     }
     grid.appendChild(c);
   }
+  const skipCard=document.createElement('div');
+  skipCard.className='vote-card';
+  skipCard.innerHTML='<span class="player-label" style="color:rgba(255,255,255,0.5)">棄票</span>';
+  skipCard.addEventListener('click',()=>{
+    G.selectedVote=-1;
+    document.querySelectorAll('.vote-card').forEach(x=>x.classList.remove('selected'));
+    skipCard.classList.add('selected');
+    document.getElementById('confirmVoteBtn').disabled=false;
+    vibrate(30);
+  });
+  grid.appendChild(skipCard);
+  const vtEl=document.getElementById('voteTimer');
+  G.voteTimerEndTime=Date.now()+30*1000;
+  if(G.voteTimerInterval)clearInterval(G.voteTimerInterval);
+  G.voteTimerInterval=setInterval(()=>{
+    const left=Math.max(0,Math.ceil((G.voteTimerEndTime-Date.now())/1000));
+    vtEl.textContent=left;
+    vtEl.classList.toggle('warning',left<=10);
+    if(left<=0){
+      clearInterval(G.voteTimerInterval);G.voteTimerInterval=null;
+      if(G.currentScreen!=='vote')return;
+      if(G.selectedVote===null)G.selectedVote=-1;
+      confirmVote();
+    }
+  },500);
 }
 
 function confirmVote(){
-  if(G.selectedVote<0)return;
-  G.votes[G.voterOrder[G.currentVoter]]=G.selectedVote;
+  if(G.selectedVote===null)return;
+  if(G.selectedVote>=0)G.votes[G.voterOrder[G.currentVoter]]=G.selectedVote;
   G.currentVoter++;
   vibrate(50);
   if(G.currentVoter<G.voterOrder.length){
@@ -1174,7 +1196,7 @@ function showDigitalResult(){
   const sorted=Object.entries(tally).map(([i,c])=>({idx:+i,count:c})).sort((a,b)=>b.count-a.count);
   const max=sorted[0]?.count||0;
   const tops=sorted.filter(s=>s.count===max);
-  const isTie=tops.length>1;
+  const isTie=tops.length!==1;
 
   const list=document.getElementById('resultList');
   list.innerHTML='';list.style.display='flex';
@@ -1225,7 +1247,7 @@ function showElimUI(idx){
   re.textContent=role==='civilian'?'平民':role==='spy'?'臥底':'白板';
   re.style.background=role==='spy'?'var(--teal)':role==='white'?'var(--pink)':'var(--green)';
   re.style.color=role==='civilian'?'#fff':'var(--black)';
-  document.getElementById('elimWord').textContent='';
+  document.getElementById('elimWord').textContent='詞：'+G.words[idx];
   document.getElementById('resultNextBtn').textContent=role==='white'?'白板猜詞':'繼續遊戲';
   vibrate(100);
 }
@@ -1273,6 +1295,7 @@ function checkWin(){
     else w++;
   }
   if(s===0&&w===0)return'civilian';
+  if(s===0&&c===0)return'civilian';
   if(s>=c+w)return'spy';
   return null;
 }
@@ -1309,6 +1332,8 @@ function resetGame(){
   G.round=1;G.pendingElimination=-1;
   G.roles=[];G.words=[];G.alive=[];G.nicknames=[];G.speakerOrder=[];G.votes={};
   clearSave();
+  document.getElementById('customCivilian').value='';
+  document.getElementById('customSpy').value='';
   showScreen('setup');updateSetupUI();
 }
 function backToStart(){
@@ -1357,6 +1382,29 @@ document.querySelectorAll('input').forEach(inp=>{
   inp.addEventListener('blur',()=>document.body.classList.remove('keyboard-open'));
 });
 
+// Back button / swipe-back prevention
+history.replaceState({screen:'start'},'');
+function pushGameHistory(){
+  if(!history.state?.inGame)history.pushState({inGame:true},'');
+}
+window.addEventListener('popstate',()=>{
+  const inPassPlay=G.roles.length>0&&G.currentScreen!=='start'&&G.currentScreen!=='gameover';
+  const inOnline=typeof OL!=='undefined'&&OL.roomId&&OL.state&&OL.state.gamePhase!=='waiting'&&OL.state.gamePhase!=='ended';
+  if(inPassPlay||inOnline){history.pushState({inGame:true},'');}
+});
+
+// Restore timer when returning from background
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  if(G.timerInterval&&G.timerEndTime){
+    const el=document.getElementById('timer');
+    const left=Math.max(0,Math.ceil((G.timerEndTime-Date.now())/1000));
+    el.textContent=left;
+    el.classList.toggle('warning',left<=10);
+    if(left<=0){clearTimer();vibrate(200);nextSpeaker()}
+  }
+});
+
 /* ===== GA4 EVENT TRACKING ===== */
 function gae(name,params){try{gtag('event',name,params||{})}catch(e){}}
 
@@ -1377,6 +1425,8 @@ let OL = {
   confirmed: false,   // revealed confirmed
   localSpyCount: 2,
   localWhiteCount: 0,
+  timeOffset: 0,
+  reconnecting: false,
 };
 
 function ol_toast(msg, type) {
@@ -1393,7 +1443,8 @@ function ol_clearTimer() {
 function ol_startCountdown(el, endTime, onDone) {
   ol_clearTimer();
   function tick() {
-    const left = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    const now = Date.now() + OL.timeOffset;
+    const left = Math.max(0, Math.ceil((endTime - now) / 1000));
     el.textContent = left;
     el.classList.toggle('warning', left <= 10);
     if (left <= 0) { ol_clearTimer(); if (onDone) onDone(); }
@@ -1407,10 +1458,9 @@ function ol_initSocket() {
   if (socket) return;
   socket = io();
   socket.on('connect', () => {
-    // Auto-rejoin on reconnect
     const savedRoom = sessionStorage.getItem('ol_room');
     const savedName = sessionStorage.getItem('ol_name');
-    if (savedRoom && savedName && !OL.roomId) {
+    if (savedRoom && savedName) {
       socket.emit('rejoinRoom', { roomId: savedRoom, name: savedName });
     }
   });
@@ -1423,15 +1473,16 @@ function ol_initSocket() {
 
   socket.on('roomJoined', ({ roomId, playerId, reconnected }) => {
     OL.roomId = roomId; OL.playerId = playerId;
+    OL.reconnecting = !!reconnected;
     sessionStorage.setItem('ol_room', roomId);
     if (reconnected) ol_toast('重新連線成功', 'success');
-    // Don't navigate if already on a game screen
     if (!OL.state || OL.state.gamePhase === 'waiting') showScreen('lobby');
   });
 
   socket.on('state', (state) => {
     OL.state = state;
     OL.isHost = state.hostId === OL.playerId;
+    OL.reconnecting = false;
     ol_renderState(state);
   });
 
@@ -1440,18 +1491,20 @@ function ol_initSocket() {
   socket.on('revealWord', ({ word, role }) => {
     OL.myWord = word; OL.myRole = role;
     OL.confirmed = false;
-    ol_showReveal();
+    if (!OL.reconnecting) ol_showReveal();
   });
 
   socket.on('gameStarted', () => {
     gae('online_game_start', { players: OL.state?.totalPlayers });
   });
 
-  socket.on('speakerTurn', ({ speakerId, speakerName, endTime, round }) => {
+  socket.on('speakerTurn', ({ speakerId, speakerName, endTime, round, serverTime }) => {
+    if (serverTime) OL.timeOffset = serverTime - Date.now();
     ol_showDescribe(speakerId, speakerName, endTime, round);
   });
 
-  socket.on('votePhase', ({ endTime }) => {
+  socket.on('votePhase', ({ endTime, serverTime }) => {
+    if (serverTime) OL.timeOffset = serverTime - Date.now();
     OL.voteSubmitted = false; OL.selectedVote = null;
     ol_showVote(endTime);
   });
@@ -1709,11 +1762,11 @@ function ol_showDescribe(speakerId, speakerName, endTime, round) {
   descBtn.disabled = false;
   descBtn.textContent = '描述完畢';
   document.getElementById('olDescWait').style.display = isMySpeaker ? 'none' : 'block';
-  document.getElementById('olPeekBtn').style.display = 'block';
+  const meAlive=OL.state?.players?.find(p=>p.id===OL.playerId)?.alive;
+  document.getElementById('olPeekBtn').style.display=meAlive?'block':'none';
 
-  // Show word reminder if it's my turn
   const wordEl = document.getElementById('olMyWord');
-  if (isMySpeaker && OL.myWord) {
+  if (OL.myWord) {
     wordEl.textContent = OL.myRole === 'white' ? '你是白板' : '你的詞：' + OL.myWord;
     wordEl.className = 'word-reminder' + (OL.myRole === 'white' ? ' is-white' : '');
     wordEl.style.display = 'inline-block';
@@ -1744,6 +1797,7 @@ function ol_showVote(endTime) {
   document.getElementById('olVoteAlive').textContent = '存活：' + (s?.aliveCount || '?') + ' 人';
   document.getElementById('olVoteProgress').textContent = '已投票 0/' + (s?.voteTotal || '?');
   document.getElementById('olConfirmVoteBtn').disabled = true;
+  document.getElementById('olConfirmVoteBtn').textContent = '確認投票';
   OL.selectedVote = null;
 
   const grid = document.getElementById('olVoteGrid');
@@ -1768,7 +1822,34 @@ function ol_showVote(endTime) {
     grid.appendChild(c);
   });
 
-  ol_startCountdown(document.getElementById('olVoteTimer'), endTime);
+  const olSkip=document.createElement('div');
+  olSkip.className='vote-card';
+  olSkip.innerHTML='<span class="player-label" style="color:rgba(255,255,255,0.5)">棄票</span>';
+  olSkip.addEventListener('click',()=>{
+    if(OL.voteSubmitted)return;
+    OL.selectedVote='skip';
+    document.querySelectorAll('#olVoteGrid .vote-card').forEach(x=>x.classList.remove('selected'));
+    olSkip.classList.add('selected');
+    document.getElementById('olConfirmVoteBtn').disabled=false;
+    vibrate(30);
+  });
+  grid.appendChild(olSkip);
+
+  ol_startCountdown(document.getElementById('olVoteTimer'), endTime, function(){
+    if(!OL.voteSubmitted&&OL.selectedVote){
+      ol_confirmVote();
+    }else{
+      document.getElementById('olConfirmVoteBtn').disabled=true;
+      document.getElementById('olConfirmVoteBtn').textContent='投票時間到';
+    }
+  });
+
+  const voteWordEl=document.getElementById('olVoteMyWord');
+  if(OL.myWord){
+    voteWordEl.textContent=OL.myRole==='white'?'你是白板':'你的詞：'+OL.myWord;
+    voteWordEl.className='word-reminder'+(OL.myRole==='white'?' is-white':'');
+    voteWordEl.style.display='inline-block';
+  }else{voteWordEl.style.display='none'}
 
   // Check if player is alive — dead players see spectator view
   const me = s.players.find(p => p.id === OL.playerId);
@@ -1788,7 +1869,7 @@ function ol_showVote(endTime) {
 function ol_confirmVote() {
   if (!OL.selectedVote || OL.voteSubmitted) return;
   OL.voteSubmitted = true;
-  socket.emit('submitVote', { targetId: OL.selectedVote });
+  socket.emit('submitVote', { targetId: OL.selectedVote === 'skip' ? null : OL.selectedVote });
   document.getElementById('olConfirmVoteBtn').disabled = true;
   document.getElementById('olConfirmVoteBtn').textContent = '已投票';
   vibrate(50);
@@ -1832,6 +1913,7 @@ function ol_showResult(tally, eliminated, isTie, autoAdvance) {
     re.textContent = role === 'civilian' ? '平民' : role === 'spy' ? '臥底' : '白板';
     re.style.background = role === 'spy' ? 'var(--teal)' : role === 'white' ? 'var(--pink)' : 'var(--green)';
     re.style.color = role === 'civilian' ? '#fff' : 'var(--black)';
+    document.getElementById('olElimWord').textContent = '詞：' + eliminated.word;
     document.getElementById('olResultNextBtn').textContent = role === 'white' ? '白板猜詞' : '繼續遊戲';
     vibrate(100);
   }

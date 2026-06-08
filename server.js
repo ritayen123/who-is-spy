@@ -288,6 +288,7 @@ function startSpeakerTurn(roomId) {
     speakerName: p?.name || '???',
     endTime,
     round: room.round,
+    serverTime: Date.now(),
   });
   emitState(roomId);
 
@@ -318,7 +319,7 @@ function startVotePhase(roomId) {
   const endTime = Date.now() + VOTE_TIME * 1000;
   room.endTimes.vote = endTime;
 
-  io.to(roomId).emit('votePhase', { endTime });
+  io.to(roomId).emit('votePhase', { endTime, serverTime: Date.now() });
   emitState(roomId);
 
   // Auto-vote for bots (random target)
@@ -344,21 +345,24 @@ function submitVote(roomId, voterId, targetId) {
   if (!room || room.gamePhase !== 'voting') return;
 
   const voter = findPlayerBySocket(room, voterId);
-  const target = findPlayerBySocket(room, targetId);
-  if (!voter || !voter.alive || !target || !target.alive) return;
-  if (voterId === targetId) return;
-  if (room.votes[voterId]) return; // already voted
+  if (!voter || !voter.alive) return;
+  if (room.votes[voterId]) return;
 
-  room.votes[voterId] = targetId;
+  if (!targetId) {
+    room.votes[voterId] = '__skip__';
+  } else {
+    const target = findPlayerBySocket(room, targetId);
+    if (!target || !target.alive) return;
+    if (voterId === targetId) return;
+    room.votes[voterId] = targetId;
+  }
 
-  // Broadcast anonymous progress
   const alive = alivePlayers(room).filter(p => !p.disconnected);
   io.to(roomId).emit('voteProgress', {
     count: Object.keys(room.votes).length,
     total: alive.length,
   });
 
-  // Check if all alive non-disconnected players have voted
   const allVoted = alive.every(p => room.votes[p.id]);
   if (allVoted) {
     clearRoomTimer(room, 'vote');
@@ -372,9 +376,9 @@ function tallyVotes(roomId) {
   clearRoomTimer(room, 'vote');
   room.gamePhase = 'result';
 
-  // Count votes
   const tally = {};
   for (const targetId of Object.values(room.votes)) {
+    if (targetId === '__skip__') continue;
     tally[targetId] = (tally[targetId] || 0) + 1;
   }
 
@@ -409,7 +413,7 @@ function tallyVotes(roomId) {
 
     io.to(roomId).emit('voteResult', {
       tally: sorted,
-      eliminated: { id: elimId, name: elimPlayer?.name, role },
+      eliminated: { id: elimId, name: elimPlayer?.name, role, word: room.words[elimId] },
       isTie: false,
       autoAdvance,
     });
@@ -497,6 +501,7 @@ function checkWin(room) {
     else w++;
   });
   if (s === 0 && w === 0) return 'civilian';
+  if (s === 0 && c === 0) return 'civilian';
   if (s >= c + w) return 'spy';
   return null;
 }
@@ -685,6 +690,21 @@ io.on('connection', (socket) => {
 
     io.to(rid).emit('playerReconnected', { id: socket.id, name });
     emitState(rid);
+
+    if (room.gamePhase === 'describing') {
+      const sid = room.speakerOrder[room.speakerIdx];
+      const sp = findPlayerBySocket(room, sid);
+      if (sp && room.endTimes.describe) {
+        socket.emit('speakerTurn', { speakerId: sid, speakerName: sp.name || '???', endTime: room.endTimes.describe, round: room.round, serverTime: Date.now() });
+      }
+    } else if (room.gamePhase === 'voting' && room.endTimes.vote) {
+      socket.emit('votePhase', { endTime: room.endTimes.vote, serverTime: Date.now() });
+      const aliveVoters = alivePlayers(room).filter(p => !p.disconnected);
+      socket.emit('voteProgress', { count: Object.keys(room.votes).length, total: aliveVoters.length });
+    } else if (room.gamePhase === 'whiteGuess') {
+      const wp = findPlayerBySocket(room, room.pendingElimination);
+      socket.emit('whiteGuessPhase', { whiteId: room.pendingElimination, whiteName: wp?.name || '???' });
+    }
   });
 
   socket.on('updateConfig', (config) => {
