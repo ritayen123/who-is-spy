@@ -2,6 +2,8 @@ const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
+const WORD_BANK = require('./words');
 
 const app = express();
 const httpServer = createServer(app);
@@ -9,6 +11,12 @@ const io = new Server(httpServer, {
   cors: { origin: '*' },
   pingTimeout: 60000,
 });
+
+// Inject word bank into index.html at boot — words.js is the single source
+// for both server (online mode) and client (pass-the-phone mode)
+const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8')
+  .replace('/*__WORD_BANK__*/[]', JSON.stringify(WORD_BANK));
+app.get(['/', '/index.html'], (req, res) => res.type('html').send(INDEX_HTML));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/online', (req, res) => res.json({ count: io.sockets.sockets.size }));
@@ -27,21 +35,6 @@ const REVEAL_TIMEOUT = 60;
 const WHITE_GUESS_TIME = 30;
 const GRACE_PERIOD = 60000; // 60s reconnect window
 const CLEANUP_DELAY = 60000; // 60s before deleting empty room
-
-// ─── Word Bank (server-side only, anti-cheat) ───────────
-const WORD_BANK = [
-  ['水餃','鍋貼'],['珍珠奶茶','波霸奶茶'],['蝙蝠俠','蜘蛛人'],['iPhone','Samsung'],
-  ['火鍋','麻辣燙'],['牛排','豬排'],['麥當勞','肯德基'],['Uber','Lyft'],
-  ['咖啡','拿鐵'],['日本','韓國'],['鋼琴','吉他'],['游泳','潛水'],
-  ['貓','狗'],['雞蛋','鴨蛋'],['籃球','排球'],['計程車','公車'],
-  ['蛋糕','麵包'],['微波爐','烤箱'],['口紅','唇蜜'],['皮鞋','拖鞋'],
-  ['沙發','椅子'],['冰箱','冷凍庫'],['Netflix','YouTube'],['Facebook','Instagram'],
-  ['醫生','護士'],['老師','教授'],['高鐵','火車'],['地震','颱風'],
-  ['聖誕節','跨年'],['海邊','游泳池'],['巧克力','可可'],['滷肉飯','雞肉飯'],
-  ['豆漿','牛奶'],['雨傘','雨衣'],['漫畫','動畫'],['戒指','手環'],
-  ['行李箱','背包'],['WiFi','藍牙'],['冰淇淋','雪糕'],['眼鏡','墨鏡'],
-  ['枕頭','抱枕'],['番茄醬','辣椒醬'],['手錶','時鐘'],['腳踏車','機車'],
-];
 
 // ─── Room Management ────────────────────────────────────
 const rooms = new Map();
