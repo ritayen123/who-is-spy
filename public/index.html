@@ -35,7 +35,7 @@ if(_ref==='ig'){_gaConf.campaign_source='instagram';_gaConf.campaign_medium='dm'
 else if(_ref==='f'){_gaConf.campaign_source='friend';_gaConf.campaign_medium='share';_gaConf.campaign_name='forward'}
 else if(_ref){_gaConf.campaign_source=_ref;_gaConf.campaign_medium='link'}
 gtag('config','G-K318HMNR62',_gaConf);
-if(_ref){history.replaceState(null,'',location.pathname)}
+if(_ref){const _u=new URL(location.href);_u.searchParams.delete('r');const _q=_u.searchParams.toString();history.replaceState(null,'',_u.pathname+(_q?'?'+_q:''))}
 </script>
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -353,6 +353,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
     <div class="setup-row col">
+      <div class="setup-label">描述時間<small>每人描述秒數</small></div>
+      <div class="word-source-tabs" style="margin-bottom:0">
+        <button class="word-tab dt-tab" data-dt="30" onclick="setDescTime(30)">30秒</button>
+        <button class="word-tab dt-tab active" data-dt="60" onclick="setDescTime(60)">60秒</button>
+        <button class="word-tab dt-tab" data-dt="90" onclick="setDescTime(90)">90秒</button>
+      </div>
+    </div>
+    <div class="setup-row col">
       <div class="setup-label">題目來源</div>
       <div class="word-source-tabs">
         <button class="word-tab active" data-src="random" onclick="setWordSource('random')">隨機題庫</button>
@@ -575,6 +583,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <button class="stepper-btn" id="olBtnWhitePlus" onclick="ol_adj('whiteCount',1)">+</button>
       </div>
     </div>
+    <div class="setup-row col">
+      <div class="setup-label">描述時間<small>每人描述秒數</small></div>
+      <div class="word-source-tabs" style="margin-bottom:0">
+        <button class="word-tab ol-dt" data-dt="30" onclick="ol_setDescTime(30)">30秒</button>
+        <button class="word-tab ol-dt active" data-dt="60" onclick="ol_setDescTime(60)">60秒</button>
+        <button class="word-tab ol-dt" data-dt="90" onclick="ol_setDescTime(90)">90秒</button>
+      </div>
+    </div>
     <div class="setup-row" style="border:none">
       <div class="setup-label">題目來源<small>線上模式僅支援隨機題庫</small></div>
       <div style="font-size:14px;color:var(--lime)">隨機題庫</div>
@@ -591,6 +607,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ===== ONLINE: REVEAL ===== -->
 <div id="screen-online-reveal" class="screen scrollable">
   <div class="section-label">YOUR WORD</div>
+  <div class="timer" id="olRevealTimer" style="font-size:18px;margin:0 0 8px">60</div>
   <div class="flip-scene">
     <div class="flip-card" id="olFlipCard" onclick="ol_flipToggle()">
       <div class="flip-face flip-front">
@@ -673,6 +690,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div id="screen-online-white-guess" class="screen scrollable">
   <div class="section-label" style="color:var(--pink)">MR. WHITE</div>
   <div class="title" style="font-size:clamp(14px,3.5vw,20px);color:var(--pink);margin-bottom:8px">白板被抓到了！</div>
+  <div class="timer" id="olWhiteTimer" style="color:var(--pink);font-size:22px;margin:0 0 8px">30</div>
   <div id="olWhiteGuessArea">
     <p style="color:rgba(255,255,255,0.5);font-size:14px;text-align:center;margin-bottom:24px;line-height:1.8;max-width:300px">最後一次機會——<br>猜出平民的詞就能翻盤！</p>
     <input type="text" class="guess-input" id="olWhiteGuessInput" placeholder="輸入你的猜測" autocomplete="off">
@@ -725,6 +743,7 @@ let handoffCb = null;
 let revealTransitioning = false;
 let G = {
   players: 6, spies: 2, whites: 0,
+  descTime: 60,
   wordSource: 'random',
   civilianWord: '', spyWord: '',
   roles: [], words: [], alive: [],
@@ -835,8 +854,13 @@ function updateSetupUI(){
 
 function setWordSource(src){
   G.wordSource=src;
-  document.querySelectorAll('.word-tab').forEach(t=>t.classList.toggle('active',t.dataset.src===src));
+  document.querySelectorAll('.word-tab[data-src]').forEach(t=>t.classList.toggle('active',t.dataset.src===src));
   document.getElementById('customInputs').classList.toggle('show',src==='custom');
+}
+
+function setDescTime(t){
+  G.descTime=t;
+  document.querySelectorAll('.dt-tab').forEach(b=>b.classList.toggle('active',+b.dataset.dt===t));
 }
 
 /* ===== START GAME ===== */
@@ -978,7 +1002,7 @@ function nextSpeaker(){
 /* ===== TIMER (Date.now-based, survives background) ===== */
 function startTimer(){
   clearTimer();
-  G.timerEndTime=Date.now()+60*1000;
+  G.timerEndTime=Date.now()+(G.descTime||60)*1000;
   const el=document.getElementById('timer');
   function tick(){
     const left=Math.max(0,Math.ceil((G.timerEndTime-Date.now())/1000));
@@ -1275,7 +1299,8 @@ function submitWhiteGuess(){
   const guess=document.getElementById('whiteGuessInput').value.trim();
   if(!guess){alert('請輸入你的猜測！');return}
   G.alive[G.pendingElimination]=false;
-  const guessCorrect=guess.toLowerCase()===G.civilianWord.toLowerCase();
+  const norm=s=>String(s).toLowerCase().replace(/\s+/g,'');
+  const guessCorrect=norm(guess)===norm(G.civilianWord);
   gae('white_guess',{correct:guessCorrect});
   if(guessCorrect){showGameOver('white')}
   else{
@@ -1364,6 +1389,7 @@ if (_roomParam && _roomParam.length === 4) {
   showScreen('online-join');
   document.getElementById('joinRoomCode').value = _roomParam.toUpperCase();
   history.replaceState(null, '', location.pathname);
+  setTimeout(() => document.getElementById('onlineName').focus(), 400);
 }
 
 // Lock orientation
@@ -1483,6 +1509,7 @@ function ol_initSocket() {
     OL.state = state;
     OL.isHost = state.hostId === OL.playerId;
     OL.reconnecting = false;
+    if (state.serverNow) OL.timeOffset = state.serverNow - Date.now();
     ol_renderState(state);
   });
 
@@ -1518,8 +1545,9 @@ function ol_initSocket() {
     ol_showResult(tally, eliminated, isTie, autoAdvance);
   });
 
-  socket.on('whiteGuessPhase', ({ whiteId, whiteName }) => {
-    ol_showWhiteGuess(whiteId, whiteName);
+  socket.on('whiteGuessPhase', ({ whiteId, whiteName, endTime, serverTime }) => {
+    if (serverTime) OL.timeOffset = serverTime - Date.now();
+    ol_showWhiteGuess(whiteId, whiteName, endTime);
   });
 
   socket.on('whiteGuessResult', ({ guess, correct, civilianWord, timeout }) => {
@@ -1645,13 +1673,18 @@ function ol_renderState(s) {
     }
   }
 
-  // Reveal progress
+  // Reveal progress + countdown until forced start
   if (s.gamePhase === 'revealing') {
     const txt = s.revealedCount + '/' + s.totalPlayers + ' 人已確認';
     const el = document.getElementById('olRevealProgress');
     if (el) el.textContent = txt;
     const el2 = document.getElementById('olRevealProgressWait');
     if (el2) el2.textContent = txt;
+    const tEl = document.getElementById('olRevealTimer');
+    if (tEl) {
+      if (s.revealEndTime) { tEl.style.display = ''; ol_startCountdown(tEl, s.revealEndTime); }
+      else tEl.style.display = 'none';
+    }
   }
 
   // Result/GameOver host buttons
@@ -1676,6 +1709,8 @@ function ol_updateLobbyConfig(s) {
   document.getElementById('olWhiteHint').textContent = civ < 2 ? '⚠️ 平民人數不足' : s.config.spyCount + s.config.whiteCount >= ms ? '已達特殊角色上限' : '沒有題目，靠瞎掰';
   OL.localSpyCount = s.config.spyCount;
   OL.localWhiteCount = s.config.whiteCount;
+  const dt = s.config.describeTime || 60;
+  document.querySelectorAll('.ol-dt').forEach(b => b.classList.toggle('active', +b.dataset.dt === dt));
 
   // Disable stepper buttons at limits
   document.getElementById('olBtnSpyMinus').disabled = s.config.spyCount <= 1;
@@ -1692,6 +1727,11 @@ function ol_adj(field, d) {
   if (field === 'spyCount') cfg.spyCount = Math.max(1, Math.min(ms - cfg.whiteCount, cfg.spyCount + d));
   if (field === 'whiteCount') cfg.whiteCount = Math.max(0, Math.min(ms - cfg.spyCount, cfg.whiteCount + d));
   socket.emit('updateConfig', cfg);
+}
+
+function ol_setDescTime(t) {
+  if (!OL.isHost || !OL.state) return;
+  socket.emit('updateConfig', { ...OL.state.config, describeTime: t });
 }
 
 function ol_addBots() {
@@ -1936,8 +1976,11 @@ function ol_nextRound() {
 }
 
 /* ===== ONLINE WHITE GUESS ===== */
-function ol_showWhiteGuess(whiteId, whiteName) {
+function ol_showWhiteGuess(whiteId, whiteName, endTime) {
   showScreen('online-white-guess');
+  const tEl = document.getElementById('olWhiteTimer');
+  if (endTime) { tEl.style.display = ''; ol_startCountdown(tEl, endTime); }
+  else tEl.style.display = 'none';
   const isMe = whiteId === OL.playerId;
   document.getElementById('olWhiteGuessArea').style.display = isMe ? 'block' : 'none';
   document.getElementById('olWhiteWaitArea').style.display = isMe ? 'none' : 'block';

@@ -15,16 +15,17 @@ app.get('/api/online', (req, res) => res.json({ count: io.sockets.sockets.size }
 
 // ─── Constants ──────────────────────────────────────────
 const MAX_ROOMS = 200;
+const MAX_ROOMS_PER_IP = 5;
 const JOIN_RATE_LIMIT = 5;
 const FORBIDDEN_CHARS = /[<>&"'`]/;
 const MIN_PLAYERS = 4;
 const MAX_PLAYERS = 10;
 const DESCRIBE_TIME = 60;
+const DESCRIBE_TIME_OPTIONS = [30, 60, 90];
 const VOTE_TIME = 30;
 const REVEAL_TIMEOUT = 60;
+const WHITE_GUESS_TIME = 30;
 const GRACE_PERIOD = 60000; // 60s reconnect window
-const HEARTBEAT_INTERVAL = 30000;
-const IDLE_TIMEOUT = 120000; // 2min idle kick (lobby only)
 const CLEANUP_DELAY = 60000; // 60s before deleting empty room
 
 // ─── Word Bank (server-side only, anti-cheat) ───────────
@@ -59,7 +60,7 @@ function createRoom(id, hostId) {
     hostId,
     players: [],          // [{ id, name, alive, disconnected, disconnectTimer }]
     gamePhase: 'waiting', // waiting | revealing | describing | voting | result | whiteGuess | ended
-    config: { spyCount: 1, whiteCount: 0, wordSource: 'random', civilianWord: '', spyWord: '' },
+    config: { spyCount: 1, whiteCount: 0, describeTime: DESCRIBE_TIME, wordSource: 'random', civilianWord: '', spyWord: '' },
     roles: {},            // { socketId: 'civilian'|'spy'|'white' }
     words: {},            // { socketId: 'word' }
     civilianWord: '',
@@ -81,8 +82,6 @@ function getRoom(id) { return rooms.get(id?.toUpperCase()); }
 function alivePlayers(room) {
   return room.players.filter(p => p.alive && !p.disconnected);
 }
-
-function allPlayers(room) { return room.players; }
 
 function findPlayerBySocket(room, socketId) {
   return room.players.find(p => p.id === socketId);
@@ -132,6 +131,8 @@ function emitState(roomId) {
     voteTotal: alive.filter(p => !p.disconnected).length,
     describeEndTime: room.endTimes.describe || null,
     voteEndTime: room.endTimes.vote || null,
+    revealEndTime: room.endTimes.reveal || null,
+    serverNow: Date.now(),
   });
 }
 
@@ -212,6 +213,7 @@ function startGame(roomId) {
     }
   });
 
+  room.endTimes.reveal = Date.now() + REVEAL_TIMEOUT * 1000;
   io.to(roomId).emit('gameStarted', { playerCount: n, spyCount: spies, whiteCount: whites });
   emitState(roomId);
 
@@ -245,6 +247,7 @@ function confirmRevealed(roomId, socketId) {
 function beginDescribePhase(roomId) {
   const room = getRoom(roomId);
   if (!room) return;
+  clearRoomTimer(room, 'reveal');
   room.gamePhase = 'describing';
 
   if (room.round === 1) {
@@ -278,7 +281,8 @@ function startSpeakerTurn(roomId) {
     return;
   }
 
-  const endTime = Date.now() + DESCRIBE_TIME * 1000;
+  const describeTime = room.config.describeTime || DESCRIBE_TIME;
+  const endTime = Date.now() + describeTime * 1000;
   room.endTimes.describe = endTime;
 
   const speaker = room.speakerOrder[room.speakerIdx];
@@ -295,7 +299,7 @@ function startSpeakerTurn(roomId) {
   clearRoomTimer(room, 'describe');
   room.timers.describe = setTimeout(() => {
     nextSpeaker(roomId);
-  }, DESCRIBE_TIME * 1000);
+  }, describeTime * 1000);
 }
 
 function nextSpeaker(roomId) {
@@ -438,17 +442,21 @@ function afterResult(roomId) {
     if (role === 'white') {
       room.gamePhase = 'whiteGuess';
       const wp = findPlayerBySocket(room, room.pendingElimination);
+      const guessEndTime = Date.now() + WHITE_GUESS_TIME * 1000;
+      room.endTimes.whiteGuess = guessEndTime;
       io.to(roomId).emit('whiteGuessPhase', {
         whiteId: room.pendingElimination,
         whiteName: wp?.name || '???',
+        endTime: guessEndTime,
+        serverTime: Date.now(),
       });
       emitState(roomId);
-      // White guess timeout — auto-fail if no guess in 30s
+      // White guess timeout — auto-fail if no guess in time
       room.timers.whiteGuess = setTimeout(() => {
         if (room.gamePhase === 'whiteGuess') {
           submitWhiteGuess(roomId, room.pendingElimination, '', true);
         }
-      }, 30000);
+      }, WHITE_GUESS_TIME * 1000);
       return;
     }
     // Eliminate the player
@@ -467,9 +475,10 @@ function submitWhiteGuess(roomId, socketId, guess, isTimeout) {
   const room = getRoom(roomId);
   if (!room || room.gamePhase !== 'whiteGuess') return;
   if (socketId !== room.pendingElimination) return;
-  if (room.timers.whiteGuess) { clearTimeout(room.timers.whiteGuess); room.timers.whiteGuess = null; }
+  clearRoomTimer(room, 'whiteGuess');
 
-  const correct = !isTimeout && guess.trim().toLowerCase() === room.civilianWord.toLowerCase();
+  const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
+  const correct = !isTimeout && norm(guess) === norm(room.civilianWord);
 
   // Eliminate white
   const p = findPlayerBySocket(room, room.pendingElimination);
@@ -539,7 +548,11 @@ function playAgain(roomId) {
   room.pendingElimination = null;
   room.players.forEach(p => { p.alive = true; });
 
-  // Remove disconnected players
+  // Remove disconnected players (clear their grace timers first so they
+  // can't fire into the new game after the player object is dropped)
+  room.players.forEach(p => {
+    if (p.disconnected && p.disconnectTimer) { clearTimeout(p.disconnectTimer); p.disconnectTimer = null; }
+  });
   room.players = room.players.filter(p => !p.disconnected);
 
   emitState(roomId);
@@ -567,6 +580,12 @@ function scheduleCleanup(room) {
 }
 
 // ─── Socket Handlers ────────────────────────────────────
+function clientIp(socket) {
+  const xf = socket.handshake.headers['x-forwarded-for'];
+  if (typeof xf === 'string' && xf.length > 0) return xf.split(',')[0].trim();
+  return socket.handshake.address || '';
+}
+
 io.on('connection', (socket) => {
   let joinCount = 0;
 
@@ -583,9 +602,17 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: '你已在房間中' });
       return;
     }
+    const ip = clientIp(socket);
+    let owned = 0;
+    for (const r of rooms.values()) { if (ip && r.creatorIp === ip) owned++; }
+    if (owned >= MAX_ROOMS_PER_IP) {
+      socket.emit('error', { message: '建立的房間數已達上限，請稍後再試' });
+      return;
+    }
 
     const roomId = genRoomId();
     const room = createRoom(roomId, socket.id);
+    room.creatorIp = ip;
     room.players.push({ id: socket.id, name, alive: true, disconnected: false });
     rooms.set(roomId, room);
 
@@ -703,16 +730,21 @@ io.on('connection', (socket) => {
       socket.emit('voteProgress', { count: Object.keys(room.votes).length, total: aliveVoters.length });
     } else if (room.gamePhase === 'whiteGuess') {
       const wp = findPlayerBySocket(room, room.pendingElimination);
-      socket.emit('whiteGuessPhase', { whiteId: room.pendingElimination, whiteName: wp?.name || '???' });
+      socket.emit('whiteGuessPhase', { whiteId: room.pendingElimination, whiteName: wp?.name || '???', endTime: room.endTimes.whiteGuess || null, serverTime: Date.now() });
     }
   });
 
   socket.on('updateConfig', (config) => {
     const room = getRoom(socket.data.roomId);
     if (!room || room.hostId !== socket.id || room.gamePhase !== 'waiting') return;
+    if (!config || typeof config !== 'object') return;
 
-    if (config.spyCount !== undefined) room.config.spyCount = config.spyCount;
-    if (config.whiteCount !== undefined) room.config.whiteCount = config.whiteCount;
+    const spy = parseInt(config.spyCount, 10);
+    const white = parseInt(config.whiteCount, 10);
+    const dt = parseInt(config.describeTime, 10);
+    if (Number.isInteger(spy)) room.config.spyCount = spy;
+    if (Number.isInteger(white)) room.config.whiteCount = white;
+    if (DESCRIBE_TIME_OPTIONS.includes(dt)) room.config.describeTime = dt;
     room.config.wordSource = 'random';
     clampConfig(room);
 
@@ -793,10 +825,6 @@ io.on('connection', (socket) => {
     handleDisconnect(socket, true);
   });
 
-  socket.on('heartbeat', () => {
-    socket.data.lastHeartbeat = Date.now();
-  });
-
   socket.on('disconnect', () => {
     handleDisconnect(socket, false);
   });
@@ -835,6 +863,16 @@ function handleDisconnect(socket, voluntary) {
         if (room.gamePhase === 'describing') {
           const currentSpeaker = room.speakerOrder[room.speakerIdx];
           if (currentSpeaker === socket.id) nextSpeaker(roomId);
+        }
+        // If the leaver was the last pending voter, tally immediately
+        if (room.gamePhase === 'voting') {
+          const aliveVoters = alivePlayers(room);
+          io.to(roomId).emit('voteProgress', { count: Object.keys(room.votes).length, total: aliveVoters.length });
+          if (aliveVoters.length > 0 && aliveVoters.every(p => room.votes[p.id])) {
+            clearRoomTimer(room, 'vote');
+            tallyVotes(roomId);
+            return;
+          }
         }
       }
       emitState(roomId);
@@ -877,6 +915,17 @@ function handleDisconnect(socket, voluntary) {
     if (room.gamePhase === 'describing') {
       const currentSpeaker = room.speakerOrder[room.speakerIdx];
       if (currentSpeaker === socket.id) nextSpeaker(roomId);
+    }
+
+    // If everyone still connected has voted, tally immediately
+    if (room.gamePhase === 'voting') {
+      const aliveVoters = alivePlayers(room);
+      io.to(roomId).emit('voteProgress', { count: Object.keys(room.votes).length, total: aliveVoters.length });
+      if (aliveVoters.length > 0 && aliveVoters.every(p => room.votes[p.id])) {
+        clearRoomTimer(room, 'vote');
+        tallyVotes(roomId);
+        return;
+      }
     }
 
     emitState(roomId);
