@@ -35,6 +35,10 @@ const REVEAL_TIMEOUT = 60;
 const WHITE_GUESS_TIME = 30;
 const GRACE_PERIOD = 60000; // 60s reconnect window
 const CLEANUP_DELAY = 60000; // 60s before deleting empty room
+// 全員斷線的房要留多久才回收。必須明顯長於 GRACE_PERIOD，
+// 否則玩家還在重連寬限期內，房就先被掃掉了。（測試可用環境變數縮短）
+const EMPTY_ROOM_GRACE = Number(process.env.EMPTY_ROOM_GRACE || 180000); // 預設 3 分鐘
+const SWEEP_INTERVAL = Number(process.env.SWEEP_INTERVAL || 60000);
 
 // ─── Room Management ────────────────────────────────────
 const rooms = new Map();
@@ -65,6 +69,7 @@ function createRoom(id, hostId) {
     votes: {},
     pendingElimination: null,
     usedWordIndices: [],
+    emptySince: null,     // 全員離線起始時間，供閒置回收判斷寬限期
     timers: {},           // { describe, vote, reveal, cleanup }
     endTimes: {},         // { describe, vote }
   };
@@ -582,7 +587,7 @@ function clientIp(socket) {
 io.on('connection', (socket) => {
   let joinCount = 0;
 
-  socket.on('createRoom', ({ name }) => {
+  socket.on('createRoom', ({ name } = {}) => {
     if (!name || name.length < 1 || name.length > 8 || FORBIDDEN_CHARS.test(name)) {
       socket.emit('error', { message: '暱稱無效（1-8字，不可含特殊符號）' });
       return;
@@ -617,7 +622,7 @@ io.on('connection', (socket) => {
     emitState(roomId);
   });
 
-  socket.on('joinRoom', ({ name, roomId }) => {
+  socket.on('joinRoom', ({ name, roomId } = {}) => {
     if (!name || name.length < 1 || name.length > 8 || FORBIDDEN_CHARS.test(name)) {
       socket.emit('error', { message: '暱稱無效（1-8字，不可含特殊符號）' });
       return;
@@ -631,7 +636,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const rid = roomId?.toUpperCase();
+    const rid = String(roomId ?? '').toUpperCase();
     const room = getRoom(rid);
     if (!room) {
       socket.emit('error', { message: '找不到此房間' });
@@ -663,8 +668,8 @@ io.on('connection', (socket) => {
     emitState(rid);
   });
 
-  socket.on('rejoinRoom', ({ roomId, name }) => {
-    const rid = roomId?.toUpperCase();
+  socket.on('rejoinRoom', ({ roomId, name } = {}) => {
+    const rid = String(roomId ?? '').toUpperCase();
     const room = getRoom(rid);
     if (!room) {
       socket.emit('error', { message: '房間已不存在' });
@@ -792,7 +797,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('submitVote', ({ targetId }) => {
+  socket.on('submitVote', ({ targetId } = {}) => {
     const roomId = socket.data.roomId;
     if (roomId) submitVote(roomId, socket.id, targetId);
   });
@@ -803,7 +808,7 @@ io.on('connection', (socket) => {
     if (room.gamePhase === 'result') afterResult(room.id);
   });
 
-  socket.on('submitWhiteGuess', ({ guess }) => {
+  socket.on('submitWhiteGuess', ({ guess } = {}) => {
     const roomId = socket.data.roomId;
     if (roomId) submitWhiteGuess(roomId, socket.id, guess);
   });
@@ -926,18 +931,35 @@ function handleDisconnect(socket, voluntary) {
 }
 
 // ─── Idle Cleanup ───────────────────────────────────────
+// 堵住「遊戲中全員斷線的房永不回收」的洩漏，但保留寬限期：
+// 房要連續空滿 EMPTY_ROOM_GRACE 才刪，期間任何人重連都會清掉計時重來。
+// 機器人不算在線，否則測試房只剩 bot 會永遠留著。
 setInterval(() => {
   const now = Date.now();
   for (const [id, room] of rooms) {
-    if (room.gamePhase === 'waiting') {
-      const connected = room.players.filter(p => !p.disconnected);
-      if (connected.length === 0) {
-        clearAllTimers(room);
-        rooms.delete(id);
-      }
+    const connected = room.players.filter(p => !p.disconnected && !p.isBot);
+    if (connected.length > 0) {
+      room.emptySince = null;
+      continue;
+    }
+    if (!room.emptySince) {
+      room.emptySince = now;
+      continue;
+    }
+    if (now - room.emptySince >= EMPTY_ROOM_GRACE) {
+      clearAllTimers(room);
+      rooms.delete(id);
     }
   }
-}, 60000);
+}, SWEEP_INTERVAL);
+
+// ─── 最後防線：任何未捕捉的例外都不該讓整台伺服器崩潰 ───
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
 
 // ─── Start Server ───────────────────────────────────────
 const PORT = process.env.PORT || 4000;
