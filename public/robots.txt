@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://spy.fromnineon.com/sitemap.xml
