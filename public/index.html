@@ -103,6 +103,18 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .title{font-family:var(--font-pixel);font-size:clamp(18px,5vw,32px);color:var(--lime);text-align:center;line-height:1.6;margin-bottom:8px;text-shadow:0 0 20px rgba(170,249,82,0.3)}
 .section-label{font-family:var(--font-pixel);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;margin-bottom:16px}
 
+
+/* ── 換個遊戲玩（跨遊戲導流，視覺刻意次於「再玩一局」）── */
+.crossgame{width:100%;max-width:420px;margin-top:18px}
+.crossgame-label{font-family:var(--font-pixel);font-size:9px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;text-align:center;margin-bottom:10px;opacity:.75}
+.crossgame-cards{display:flex;gap:10px}
+.crossgame-card{flex:1;display:block;background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;padding:12px 10px;text-decoration:none;color:var(--white);text-align:center;transition:all .2s ease}
+.crossgame-card:hover{background:rgba(132,210,221,.12);border-color:rgba(132,210,221,.45);transform:translateY(-2px)}
+.crossgame-emoji{font-size:20px;line-height:1}
+.crossgame-name{font-size:14px;font-weight:700;margin-top:5px}
+.crossgame-desc{font-size:11px;color:rgba(255,255,255,.55);margin-top:3px;line-height:1.45}
+.crossgame-meta{font-size:10px;color:var(--teal);margin-top:6px;font-weight:700;opacity:.8}
+
 /* ===== BUTTONS ===== */
 .btn{font-family:var(--font-body);font-weight:700;font-size:16px;border:none;cursor:pointer;padding:14px 32px;border-radius:3px;transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .btn-primary{background:var(--lime);color:var(--black)}
@@ -578,6 +590,27 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn btn-primary btn-full" onclick="resetGame()">再玩一局</button>
     <button class="btn btn-secondary btn-small" onclick="backToStart()">回首頁</button>
   </div>
+
+  <!-- 換個遊戲玩 -->
+  <div class="crossgame">
+    <div class="crossgame-label">換個遊戲玩</div>
+    <div class="crossgame-cards">
+      <a class="crossgame-card" href="https://game.fromnineon.com/" target="_blank" rel="noopener"
+         onclick="gae('cross_game_click', { target: 'game' })">
+        <div class="crossgame-emoji">🎮</div>
+        <div class="crossgame-name">加字挑戰</div>
+        <div class="crossgame-desc">輪流加字，被敲頭就淘汰</div>
+        <div class="crossgame-meta">2–8 人</div>
+      </a>
+      <a class="crossgame-card" href="https://pin.fromnineon.com/" target="_blank" rel="noopener"
+         onclick="gae('cross_game_click', { target: 'pin' })">
+        <div class="crossgame-emoji">🧩</div>
+        <div class="crossgame-name">拼來拼去</div>
+        <div class="crossgame-desc">同一組部件，比誰拼出最多字</div>
+        <div class="crossgame-meta">2–8 人</div>
+      </a>
+    </div>
+  </div>
 </div>
 
 <!-- ===== ONLINE: JOIN ===== -->
@@ -756,6 +789,27 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn btn-primary btn-full" id="olPlayAgainBtn" onclick="ol_playAgain()" style="display:none">再玩一局</button>
     <div id="olGameoverWait" class="online-waiting" style="display:none">等待房主重新開始...</div>
     <button class="btn btn-secondary btn-small" onclick="ol_leave()">離開房間</button>
+  </div>
+
+  <!-- 換個遊戲玩 -->
+  <div class="crossgame">
+    <div class="crossgame-label">換個遊戲玩</div>
+    <div class="crossgame-cards">
+      <a class="crossgame-card" href="https://game.fromnineon.com/" target="_blank" rel="noopener"
+         onclick="gae('cross_game_click', { target: 'game' })">
+        <div class="crossgame-emoji">🎮</div>
+        <div class="crossgame-name">加字挑戰</div>
+        <div class="crossgame-desc">輪流加字，被敲頭就淘汰</div>
+        <div class="crossgame-meta">2–8 人</div>
+      </a>
+      <a class="crossgame-card" href="https://pin.fromnineon.com/" target="_blank" rel="noopener"
+         onclick="gae('cross_game_click', { target: 'pin' })">
+        <div class="crossgame-emoji">🧩</div>
+        <div class="crossgame-name">拼來拼去</div>
+        <div class="crossgame-desc">同一組部件，比誰拼出最多字</div>
+        <div class="crossgame-meta">2–8 人</div>
+      </a>
+    </div>
   </div>
 </div>
 
