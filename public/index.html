@@ -624,11 +624,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
        onclick="gae('course_click', { site: 'spy', position: 'gameover_local' })">
       <div class="course-emoji">📚</div>
       <div class="course-body">
-        <div class="course-kicker">韭點開始線上課程・開賣中</div>
+        <div class="course-kicker" data-course-kicker="韭點開始線上課程・開賣中">韭點開始出課了・10/10 開賣</div>
         <div class="course-name">加密貨幣入門課</div>
         <div class="course-desc">區塊鏈知識 × 低風險理財 × 金融防詐</div>
       </div>
-      <div class="course-cta">立即報名</div>
+      <div class="course-cta" data-course-cta="立即報名">搶先追蹤</div>
     </a>
   </div>
 </div>
@@ -834,11 +834,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
        onclick="gae('course_click', { site: 'spy', position: 'gameover_online' })">
       <div class="course-emoji">📚</div>
       <div class="course-body">
-        <div class="course-kicker">韭點開始線上課程・開賣中</div>
+        <div class="course-kicker" data-course-kicker="韭點開始線上課程・開賣中">韭點開始出課了・10/10 開賣</div>
         <div class="course-name">加密貨幣入門課</div>
         <div class="course-desc">區塊鏈知識 × 低風險理財 × 金融防詐</div>
       </div>
-      <div class="course-cta">立即報名</div>
+      <div class="course-cta" data-course-cta="立即報名">搶先追蹤</div>
     </a>
   </div>
 </div>
@@ -2154,6 +2154,14 @@ document.querySelectorAll('#screen-online-join input, #screen-lobby input, #scre
   inp.addEventListener('focus', () => document.body.classList.add('keyboard-open'));
   inp.addEventListener('blur', () => document.body.classList.remove('keyboard-open'));
 });
+</script>
+<script>
+/* 課程 10/10 00:00（台灣）開賣：之前顯示預告文字，之後自動切成開賣文字 */
+(function(){
+  if (Date.now() < Date.parse('2026-10-10T00:00:00+08:00')) return;
+  document.querySelectorAll('[data-course-kicker]').forEach(function(e){ e.textContent = e.getAttribute('data-course-kicker'); });
+  document.querySelectorAll('[data-course-cta]').forEach(function(e){ e.textContent = e.getAttribute('data-course-cta'); });
+})();
 </script>
 </body>
 </html>
