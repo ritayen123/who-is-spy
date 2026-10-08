@@ -114,6 +114,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .course-desc{font-size:11px;color:rgba(255,255,255,.55);margin-top:3px}
 .course-cta{font-size:11px;font-weight:700;background:var(--lime);color:var(--black);border-radius:3px;padding:6px 9px;white-space:nowrap}
 
+/* ── 延伸閱讀：導流到韭點開始部落格（2026-10）── */
+.blog-links{width:100%;max-width:420px;margin-top:18px;text-align:left}
+.blog-links.is-footer{max-width:320px;margin-top:32px;margin-bottom:28px}
+.blog-links-label{font-family:var(--font-pixel);font-size:9px;letter-spacing:.15em;color:var(--teal);text-align:center;margin-bottom:10px;opacity:.75;line-height:1.8}
+.blog-links-list{background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;overflow:hidden}
+.blog-link{display:block;padding:11px 14px;font-size:13px;font-weight:500;line-height:1.5;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:1px solid var(--card-border);transition:background .2s ease}
+.blog-link:hover{background:rgba(132,210,221,.12);color:var(--white)}
+.blog-link-more{display:block;padding:10px 14px;font-size:12px;font-weight:700;color:var(--lime);text-decoration:none;text-align:right}
+.blog-link-more:hover{text-decoration:underline}
+
 /* ── 換個遊戲玩（跨遊戲導流，視覺刻意次於「再玩一局」）── */
 .crossgame{width:100%;max-width:420px;margin-top:18px}
 .crossgame-label{font-family:var(--font-pixel);font-size:9px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;text-align:center;margin-bottom:10px;opacity:.75}
@@ -343,6 +353,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <button class="btn btn-secondary btn-small" style="margin-left:8px" onclick="clearSave()">捨棄</button>
     </div>
   </div>
+  <!-- 延伸閱讀：導流到韭點開始部落格 -->
+  <nav class="blog-links is-footer" aria-label="韭點開始部落格">
+    <div class="blog-links-label">延伸閱讀・韭點開始部落格</div>
+    <div class="blog-links-list">
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud', position: 'home_footer' })">反詐騙懶人包：防詐三步驟與 12 種常見詐騙手法</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/fake-investment/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud/fake-investment', position: 'home_footer' })">假投資詐騙四部曲：流程、案例與遇到怎麼辦</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/crypto/" onclick="gae('blog_click', { site: 'spy', slug: 'crypto', position: 'home_footer' })">加密貨幣新手入門：照這個順序學，少走很多冤枉路</a>
+      <a class="blog-link-more" href="https://fromnineon.com/blog/" onclick="gae('blog_click', { site: 'spy', slug: 'blog', position: 'home_footer' })">看更多文章 →</a>
+    </div>
+  </nav>
 </div>
 
 <!-- ===== RULES ===== -->
@@ -631,6 +651,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="course-cta" data-course-cta="立即報名">搶先追蹤</div>
     </a>
   </div>
+  <!-- 延伸閱讀：導流到韭點開始部落格 -->
+  <nav class="blog-links" aria-label="韭點開始部落格">
+    <div class="blog-links-label">延伸閱讀・韭點開始部落格</div>
+    <div class="blog-links-list">
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud', position: 'gameover_local' })">反詐騙懶人包：防詐三步驟與 12 種常見詐騙手法</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/fake-investment/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud/fake-investment', position: 'gameover_local' })">假投資詐騙四部曲：流程、案例與遇到怎麼辦</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/crypto/" onclick="gae('blog_click', { site: 'spy', slug: 'crypto', position: 'gameover_local' })">加密貨幣新手入門：照這個順序學，少走很多冤枉路</a>
+      <a class="blog-link-more" href="https://fromnineon.com/blog/" onclick="gae('blog_click', { site: 'spy', slug: 'blog', position: 'gameover_local' })">看更多文章 →</a>
+    </div>
+  </nav>
 </div>
 
 <!-- ===== ONLINE: JOIN ===== -->
@@ -841,6 +871,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="course-cta" data-course-cta="立即報名">搶先追蹤</div>
     </a>
   </div>
+  <!-- 延伸閱讀：導流到韭點開始部落格 -->
+  <nav class="blog-links" aria-label="韭點開始部落格">
+    <div class="blog-links-label">延伸閱讀・韭點開始部落格</div>
+    <div class="blog-links-list">
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud', position: 'gameover_online' })">反詐騙懶人包：防詐三步驟與 12 種常見詐騙手法</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/anti-fraud/fake-investment/" onclick="gae('blog_click', { site: 'spy', slug: 'anti-fraud/fake-investment', position: 'gameover_online' })">假投資詐騙四部曲：流程、案例與遇到怎麼辦</a>
+      <a class="blog-link" href="https://fromnineon.com/blog/crypto/" onclick="gae('blog_click', { site: 'spy', slug: 'crypto', position: 'gameover_online' })">加密貨幣新手入門：照這個順序學，少走很多冤枉路</a>
+      <a class="blog-link-more" href="https://fromnineon.com/blog/" onclick="gae('blog_click', { site: 'spy', slug: 'blog', position: 'gameover_online' })">看更多文章 →</a>
+    </div>
+  </nav>
 </div>
 
 <!-- ===== TOAST ===== -->
